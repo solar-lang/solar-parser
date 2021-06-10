@@ -1,0 +1,18 @@
+-- vim: set syntax=haskell:
+imports
+    ("use" import) *
+
+import
+- identifier
+- selector?
+
+selector
+/   ".."
+/   ( "." import )
+/   multi
+
+multi
+- "("
+- import*
+- ")"
+
