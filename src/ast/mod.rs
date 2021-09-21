@@ -8,6 +8,7 @@ use body::FunctionOrTypeOrTest;
 use import::Import;
 
 /// Tree representation of the syntax of a solar file
+#[derive(Clone, Debug,)]
 pub struct Ast<'a> {
     pub span: &'a str,
     pub imports: Vec<Import<'a>>,
