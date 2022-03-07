@@ -1,20 +1,13 @@
 -- vim: set syntax=haskell:
 
--- todo annotate first item with @, if it's a library
-imports
-    ("use" import) *
 
 import
-- identifier
-- selector?
+- "use" ws+
+- islib: "@"?  wd*
+- path:     (ident ** ".")    ws+
+- all:"*"   | import.items
 
-selector
-/   ".."
-/   ( "." import )
-/   multi
-
-multi
+import.items
 - "("
-- import*
+- items: ident ** ","
 - ")"
-

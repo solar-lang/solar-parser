@@ -13,49 +13,28 @@ test
 - string
 - blockexpression
 
+
 function
--   genericStub?
--   "pub"?
--- -   "func"
--   identifier
--   "("
--   (identifier type ) ** ","
--   ")"
--   ( "->" type )?
--   "="
--   expression
-
-genericStub
-- "generic"
-- identifier ** ","
-- where?
-
-where
-- "where"
-- whereclause+
-
--- TODO extend
--- this is possible:
--- C = mul(A, B)
---
--- this is not yet:
--- somef(List A, fn A -> B) -> List N
-whereclause
-- identifier
-- "="
-- fullidentifier
+- export: "export"? ws*
+- "let"
+- name: ident
 - "("
-- type ** ","
+- args: ( ident ("::" type)? ) ** ","
 - ")"
+- "="
+- expr
 
+type
+- ident
+- type | "(" (type ** ",") ")"
 
 typeDecl
 -   "type"
 - identifier
-- genericArgsDecl?
+- listOfGenericSymbols?
 - enumOrStructFields
 
-genericArgsDecl
+listOfGenericSymbols
 / "(" identifier ** "," ")"
 / identifier
 
@@ -66,11 +45,11 @@ enumOrStructFields
 enumField
 -   "|"
 -   identifier
--   type?
+-   "::" type?
 
 structField
-- "-" | "+"
+- "-"
 - "mut"?
 - identifier
-- type
+- "::" type
 
