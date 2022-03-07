@@ -22,3 +22,7 @@ use std.(
 use std.( collections networking )
 
 use std.collections.HashMap
+
+use @std.collections *
+use @std.collections (Array, Map, Set)
+

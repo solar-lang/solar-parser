@@ -1,4 +1,6 @@
 -- vim: set syntax=haskell:
+
+-- todo annotate first item with @, if it's a library
 imports
     ("use" import) *
 
