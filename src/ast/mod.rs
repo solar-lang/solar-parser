@@ -1,4 +1,5 @@
 pub mod body;
+mod function;
 pub mod expr;
 pub mod identifier;
 pub mod import;
@@ -8,6 +9,7 @@ pub mod ty;
 use body::FunctionOrTypeOrTest;
 use import::Import;
 pub use ty::Type;
+pub use function::*;
 
 /// Tree representation of the syntax of a solar file
 #[derive(Clone, Debug,)]

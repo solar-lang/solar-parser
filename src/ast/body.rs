@@ -1,5 +1,5 @@
 use crate::ast::{
-    expr::{BlockExpression, FullExpression, StringLiteral},
+    expr::{BlockExpression, StringLiteral},
     identifier::Identifier,
     type_signature::TypeSignature,
 };
@@ -11,13 +11,13 @@ use crate::util::*;
 use nom::{
     branch::alt,
     combinator::{map, opt},
-    multi::{many0, many1, separated_list1},
-    sequence::{delimited, preceded},
+    multi::{many1, separated_list1},
+    sequence::{delimited},
 };
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum FunctionOrTypeOrTest<'a> {
-    Function(Function<'a>),
+    Function(function::Function<'a>),
     TypeDecl(TypeDecl<'a>),
     Test(Test<'a>),
 }
@@ -38,55 +38,14 @@ impl<'a> Parse<'a> for FunctionOrTypeOrTest<'a> {
         alt((
             map(Test::parse, FunctionOrTypeOrTest::Test),
             map(TypeDecl::parse, FunctionOrTypeOrTest::TypeDecl),
-            map(Function::parse, FunctionOrTypeOrTest::Function),
+            map(function::Function::parse, FunctionOrTypeOrTest::Function),
         ))(input)
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Function<'a> {
-    pub span: &'a str,
-    pub exported: bool,
-    pub name: Identifier<'a>,
-    pub args: Vec<(Identifier<'a>, Option<Type<'a>>)>,
-    pub body: FullExpression<'a>,
-}
-
-impl<'a> Parse<'a> for Function<'a> {
-    fn parse(input: &'a str) -> Res<'a, Self> {
-        let (rest, exported) = opt(keywords::Export::parse)(input)?;
-        let exported = exported.is_some();
-        let (rest, name) = Identifier::parse_ws(rest)?;
-
-        let (rest, _) = keywords::ParenOpen::parse_ws(rest)?;
-
-        let args = |input| {
-            let (rest, ident) = Identifier::parse_ws(input)?;
-            let (rest, ty) = opt(preceded(keywords::TypeHint::parse_ws, Type::parse_ws))(rest)?;
-
-            Ok((rest, (ident, ty)))
-        };
-
-        let (rest, args) = many0(args)(rest)?;
-        let (rest, _) = keywords::ParenClose::parse_ws(rest)?;
-
-        let (rest, body) = FullExpression::parse_ws(rest)?;
-
-        let span = unsafe { from_to(input, rest) };
-
-        Ok((
-            rest,
-            Function {
-                span,
-                exported,
-                name,
-                args,
-                body,
-            },
-        ))
-    }
-}
-
+/// test "equals 2" {
+///     assert (1+1) 2
+/// }
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Test<'a> {
     pub span: &'a str,
@@ -115,6 +74,9 @@ impl<'a> Parse<'a> for Test<'a> {
     }
 }
 
+/// type Either (a, b)
+/// | Left :: a
+/// | Right :: b
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct TypeDecl<'a> {
     pub span: &'a str,
