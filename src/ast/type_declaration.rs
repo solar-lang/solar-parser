@@ -1,87 +1,22 @@
-use crate::ast::{
-    expr::{BlockExpression, StringLiteral},
-    identifier::Identifier,
-    type_signature::TypeSignature,
-};
-
-use crate::ast::*;
-use crate::parse::*;
-use crate::util::*;
-
 use nom::{
     branch::alt,
     combinator::{map, opt},
-    multi::{many1, separated_list1},
-    sequence::{delimited},
+    multi::{separated_list1, many1},
+    sequence::delimited,
 };
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum FunctionOrTypeOrTest<'a> {
-    Function(function::Function<'a>),
-    TypeDecl(TypeDecl<'a>),
-    Test(Test<'a>),
-}
+use crate::{parse::Res, util::from_to, Parse};
 
-impl<'a> FunctionOrTypeOrTest<'a> {
-    pub fn span(&self) -> &str {
-        use FunctionOrTypeOrTest::*;
-        match self {
-            Function(f) => f.span,
-            TypeDecl(t) => t.span,
-            Test(t) => t.span,
-        }
-    }
-}
-
-impl<'a> Parse<'a> for FunctionOrTypeOrTest<'a> {
-    fn parse(input: &'a str) -> Res<'a, Self> {
-        alt((
-            map(Test::parse, FunctionOrTypeOrTest::Test),
-            map(TypeDecl::parse, FunctionOrTypeOrTest::TypeDecl),
-            map(function::Function::parse, FunctionOrTypeOrTest::Function),
-        ))(input)
-    }
-}
-
-/// test "equals 2" {
-///     assert (1+1) 2
-/// }
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Test<'a> {
-    pub span: &'a str,
-    pub name: StringLiteral<'a>,
-    pub instructions: BlockExpression<'a>,
-}
-
-impl<'a> Parse<'a> for Test<'a> {
-    fn parse(input: &'a str) -> Res<'a, Self> {
-        let (rest, _) = keywords::Test::parse(input)?;
-
-        // (TODO) can't recover from here on
-        let (rest, name) = expr::StringLiteral::parse_ws(rest)?;
-        let (rest, instructions) = expr::BlockExpression::parse_ws(rest)?;
-
-        let span = unsafe { from_to(input, rest) };
-
-        Ok((
-            rest,
-            Test {
-                span,
-                name,
-                instructions,
-            },
-        ))
-    }
-}
+use super::{identifier::Identifier, keywords, type_signature::TypeSignature};
 
 /// type Either (a, b)
 /// | Left :: a
 /// | Right :: b
-/// 
+///
 /// type Maybe x
 /// | Some :: x
 /// | None
-/// 
+///
 /// type Person
 /// - name  :: String
 /// - age   :: Int
