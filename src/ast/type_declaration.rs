@@ -170,11 +170,11 @@ mod tests {
             "type TrafficLight | Red | Yellow | Green | RedYellow",
             "type Gender | Female | Male | Other String",
             "type Option T | Some T | None",
-            "type Result (R, E) | Ok R | Err E",
-            "type Point - x Float - y Float",
-            "type Point + x Float + y Float",
-            "type Point T + x T + y T",
-            "type Person + birthday Date + name String + mut gender Gender",
+            "type Result (r, e) | Ok r | Err e",
+            "type Point - x ::  Float - y :: Float",
+            "type Point - mut x :: Float - mut y :: Float",
+            "type Point t - x :: t - y __ t",
+            "type Person - birthday :: Date - name :: String - mut preferedPronouns :: String",
         ];
 
         for i in &input {
