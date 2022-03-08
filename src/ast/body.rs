@@ -1,6 +1,6 @@
 use crate::ast::{
     expr::{BlockExpression, FullExpression, StringLiteral},
-    identifier::{FullIdentifier, Identifier},
+    identifier::Identifier,
     type_signature::TypeSignature,
 };
 
@@ -11,8 +11,8 @@ use crate::util::*;
 use nom::{
     branch::alt,
     combinator::{map, opt},
-    multi::{many0, many1, separated_list0, separated_list1},
-    sequence::{delimited, pair, preceded},
+    multi::{many0, many1, separated_list1},
+    sequence::{delimited, preceded},
 };
 
 #[derive(Clone, Debug, Eq, PartialEq)]
