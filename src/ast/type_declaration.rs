@@ -1,13 +1,13 @@
 use nom::{
     branch::alt,
     combinator::{map, opt},
-    multi::{separated_list1, many1},
-    sequence::delimited,
+    multi::{many1, separated_list1},
+    sequence::{delimited, preceded},
 };
 
 use crate::{parse::Res, util::from_to, Parse};
 
-use super::{identifier::Identifier, keywords, type_signature::TypeSignature};
+use super::{identifier::Identifier, keywords, type_signature::TypeSignature, Type};
 
 /// type Either (a, b)
 /// | Left :: a
@@ -53,7 +53,7 @@ impl<'a> Parse<'a> for TypeDecl<'a> {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct GenericSymbols<'a> {
     pub span: &'a str,
-    pub generic_arguments: Vec<Identifier<'a>>,
+    pub symbols: Vec<Identifier<'a>>,
 }
 
 impl<'a> Parse<'a> for GenericSymbols<'a> {
@@ -74,7 +74,7 @@ impl<'a> Parse<'a> for GenericSymbols<'a> {
             rest,
             GenericSymbols {
                 span,
-                generic_arguments,
+                symbols: generic_arguments,
             },
         ))
     }
@@ -98,11 +98,14 @@ impl<'a> Parse<'a> for EnumOrStructFields<'a> {
     }
 }
 
+/// | Some :: x
+///
+/// | Lightgrey
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct EnumField<'a> {
     pub span: &'a str,
     pub name: Identifier<'a>,
-    pub value_type: Option<TypeSignature<'a>>,
+    pub ty: Option<Type<'a>>,
 }
 
 impl<'a> Parse<'a> for EnumField<'a> {
@@ -110,48 +113,39 @@ impl<'a> Parse<'a> for EnumField<'a> {
         //      |
         let (rest, _) = keywords::Abs::parse(input)?;
         let (rest, name) = Identifier::parse_ws(rest)?;
-        let (rest, value_type) = opt(TypeSignature::parse_ws)(rest)?;
+        let (rest, ty) = opt(preceded(keywords::TypeHint::parse_ws, Type::parse_ws))(rest)?;
 
         let span = unsafe { from_to(input, rest) };
 
-        Ok((
-            rest,
-            EnumField {
-                span,
-                name,
-                value_type,
-            },
-        ))
+        Ok((rest, EnumField { span, name, ty }))
     }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct StructField<'a> {
     pub span: &'a str,
-    pub public: bool,
     pub mutable: bool,
     pub name: Identifier<'a>,
-    pub value_type: TypeSignature<'a>,
+    pub ty: Type<'a>,
 }
 
 impl<'a> Parse<'a> for StructField<'a> {
     fn parse(input: &'a str) -> Res<'a, Self> {
-        use keywords::{Minus, Mut, Plus};
+        use keywords::{Minus, Mut, TypeHint};
 
-        // + or -
-        let (rest, public) =
-            alt((map(Plus::parse, |_| true), map(Minus::parse, |_| false)))(input)?;
+        // -
+        let (rest, _) = Minus::parse(input)?;
 
         // mut
-        let (rest, mutable) = if let Ok((rest, _)) = Mut::parse_ws(rest) {
-            (rest, true)
-        } else {
-            (rest, false)
-        };
+        let (rest, mutable) = opt(Mut::parse_ws)(rest)?
+        let mutable = mutable.is_some();
 
+        // name
         let (rest, name) = Identifier::parse_ws(rest)?;
 
-        let (rest, value_type) = TypeSignature::parse_ws(rest)?;
+        // :: String
+        let (rest, _) = TypeHint::parse_ws(rest)?;
+        let (rest, ty) = Type::parse_ws(rest)?;
 
         let span = unsafe { from_to(input, rest) };
 
@@ -159,10 +153,9 @@ impl<'a> Parse<'a> for StructField<'a> {
             rest,
             StructField {
                 span,
-                public,
                 mutable,
                 name,
-                value_type,
+                ty,
             },
         ))
     }

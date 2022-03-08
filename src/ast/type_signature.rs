@@ -3,6 +3,7 @@ use crate::ast::identifier::FullIdentifier;
 use crate::{ast::*, parse::*, util::*};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
+#[deprecated]
 pub struct TypeSignature<'a> {
     pub span: &'a str,
     pub type_kind: TypeKind<'a>,

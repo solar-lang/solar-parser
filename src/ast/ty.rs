@@ -11,6 +11,7 @@ use crate::{
 use super::identifier::Identifier;
 use crate::ast::keywords::{Comma, ParenClose, ParenOpen};
 
+/// TODO Type might also be a Function!
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Type<'a> {
     pub span: &'a str,
