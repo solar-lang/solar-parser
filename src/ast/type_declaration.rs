@@ -25,7 +25,7 @@ use super::{identifier::Identifier, keywords, type_signature::TypeSignature};
 pub struct TypeDecl<'a> {
     pub span: &'a str,
     pub name: Identifier<'a>,
-    pub generic_args_decl: Option<GenericArgsDecl<'a>>,
+    pub generic_symbols: Option<GenericSymbols<'a>>,
     pub fields: EnumOrStructFields<'a>,
 }
 
@@ -33,7 +33,7 @@ impl<'a> Parse<'a> for TypeDecl<'a> {
     fn parse(input: &'a str) -> Res<'a, Self> {
         let (rest, _) = keywords::Type::parse(input)?;
         let (rest, name) = Identifier::parse_ws(rest)?;
-        let (rest, generic_args_decl) = opt(GenericArgsDecl::parse_ws)(rest)?;
+        let (rest, generic_args_decl) = opt(GenericSymbols::parse_ws)(rest)?;
         let (rest, fields) = EnumOrStructFields::parse_ws(rest)?;
 
         let span = unsafe { from_to(input, rest) };
@@ -43,7 +43,7 @@ impl<'a> Parse<'a> for TypeDecl<'a> {
             TypeDecl {
                 span,
                 name,
-                generic_args_decl,
+                generic_symbols: generic_args_decl,
                 fields,
             },
         ))
@@ -51,12 +51,12 @@ impl<'a> Parse<'a> for TypeDecl<'a> {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct GenericArgsDecl<'a> {
+pub struct GenericSymbols<'a> {
     pub span: &'a str,
     pub generic_arguments: Vec<Identifier<'a>>,
 }
 
-impl<'a> Parse<'a> for GenericArgsDecl<'a> {
+impl<'a> Parse<'a> for GenericSymbols<'a> {
     fn parse(input: &'a str) -> Res<'a, Self> {
         use keywords::*;
         let (rest, generic_arguments) = alt((
@@ -72,7 +72,7 @@ impl<'a> Parse<'a> for GenericArgsDecl<'a> {
 
         Ok((
             rest,
-            GenericArgsDecl {
+            GenericSymbols {
                 span,
                 generic_arguments,
             },
