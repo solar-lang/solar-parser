@@ -36,7 +36,7 @@ macro_rules! keyword {
 
 /// takes a single character, which would be a valid identifier part.
 /// Useful for recognizing if a keyword continues after a tagged part.
-///  
+///
 /// e.g. tag("true") might recognize "true_value", even though it's the keyword "true" we're searching for.
 fn ident_char(input: &str) -> nom::IResult<&str, char> {
     nom::character::complete::satisfy(|c| {
@@ -48,6 +48,7 @@ keyword!(Abs, "|");
 keyword!(Add, "+", tag("+"));
 keyword!(And, "and", ident_char);
 keyword!(Assign, "=");
+keyword!(At, "@");
 keyword!(BracketClose, "]");
 keyword!(BracketOpen, "[");
 keyword!(Break, "break", ident_char);
@@ -76,6 +77,7 @@ keyword!(Let, "let", ident_char);
 keyword!(Loop, "loop", ident_char);
 keyword!(Minus, "-");
 keyword!(Multiply, "*");
+keyword!(Star, "*");
 keyword!(Mut, "mut", ident_char);
 keyword!(Next, "next", ident_char);
 keyword!(Not, "!");

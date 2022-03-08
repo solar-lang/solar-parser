@@ -1,91 +1,68 @@
-use crate::{ast::*, parse::*, util::*};
+use crate::{ast::identifier::Identifier, ast::*, parse::*, util::*};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Import<'a> {
     pub span: &'a str,
-    pub path: ImportPath<'a>,
+    /// If true, find the import in some library, otherwise imported from the projects root file
+    pub is_lib: bool,
+    /// Path pointing to where to find the code
+    /// e.g. collection.array
+    pub path: Vec<Identifier<'a>>,
+    /// Items that are supposed to be imported from the path
+    /// e.g.    (Array, sort, binarySearch)
+    ///         *
+    pub items: Selection<'a>,
 }
 
 impl<'a> Parse<'a> for Import<'a> {
     fn parse(input: &'a str) -> Res<'a, Self> {
+        use nom::combinator::opt;
+
         let (rest, _) = keywords::Use::parse(input)?;
-        let (rest, path) = ImportPath::parse_ws(rest)?;
+
+        let (rest, is_lib) = opt(keywords::At::parse_ws)(rest)?;
+        let is_lib = is_lib.is_some();
+
+        let (rest, path) = joined_by(Identifier::parse_ws, keywords::Dot::parse_ws)(rest)?;
+
+        let (rest, items) = Selection::parse_ws(rest)?;
 
         let span = unsafe { from_to(input, rest) };
 
-        Ok((rest, Import { span, path }))
+        Ok((
+            rest,
+            Import {
+                span,
+                is_lib,
+                path,
+                items,
+            },
+        ))
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct ImportPath<'a> {
-    pub span: &'a str,
-    pub from: identifier::Identifier<'a>,
-    pub select: Option<Box<ImportSelector<'a>>>,
+/// Selection of imported items
+#[derive(PartialEq, Eq, Debug, Clone)]
+pub enum Selection<'a> {
+    All,
+    Items(Vec<Identifier<'a>>),
 }
 
-impl<'a> Parse<'a> for ImportPath<'a> {
+impl<'a> Parse<'a> for Selection<'a> {
     fn parse(input: &'a str) -> Res<'a, Self> {
-        let (rest, from) = identifier::Identifier::parse(input)?;
+        use nom::branch::alt;
+        use nom::combinator::map;
 
-        match ImportSelector::parse_ws(rest) {
-            Ok((rest, select)) => {
-                let select = Some(Box::new(select));
-                let span = unsafe { from_to(input, rest) };
+        let all = map(keywords::Star::parse, |_| Selection::All);
 
-                Ok((rest, ImportPath { span, from, select }))
-            }
-            _ => {
-                let span = unsafe { from_to(input, rest) };
-                Ok((
-                    rest,
-                    ImportPath {
-                        span,
-                        from,
-                        select: None,
-                    },
-                ))
-            }
-        }
-    }
-}
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum ImportSelector<'a> {
-    // .. (spread)
-    Everything { span: &'a str },
-    // .xyz
-    Package(ImportPath<'a>),
-    Packages(Vec<ImportPath<'a>>),
-}
-
-impl<'a> Parse<'a> for ImportSelector<'a> {
-    fn parse(input: &'a str) -> Res<'a, Self> {
-        use keywords::*;
-        use nom::{
-            branch::alt,
-            combinator::map,
-            multi::many1,
-            sequence::{delimited, preceded},
+        let items = |input| {
+            let (rest, _) = keywords::ParenOpen::parse(input)?;
+            let (rest, items) = joined_by(Identifier::parse_ws, keywords::Comma::parse_ws)(rest)?;
+            let (rest, _) = keywords::ParenClose::parse_ws(rest)?;
+            Ok((rest, Selection::Items(items)))
         };
 
-        alt((
-            map(Spread::parse, |Spread { span }| {
-                ImportSelector::Everything { span }
-            }),
-            map(
-                preceded(Dot::parse_ws, ImportPath::parse_ws),
-                ImportSelector::Package,
-            ),
-            map(
-                delimited(
-                    ParenOpen::parse,
-                    many1(ImportPath::parse_ws),
-                    ParenClose::parse_ws,
-                ),
-                ImportSelector::Packages,
-            ),
-        ))(input)
+        alt((all, items))(input)
     }
 }
 
@@ -95,8 +72,8 @@ mod tests {
 
     #[test]
     fn imports() {
-        let input = "std.collections(hashmap vector util..)  ";
-        let imports = ImportPath::parse(input);
+        let input = "use std.collections (hashmap, vector, util)  ";
+        let imports = Import::parse(input);
         assert!(imports.is_ok());
         let (rest, imports) = imports.unwrap();
         assert_eq!(rest, "  ");
@@ -106,15 +83,20 @@ mod tests {
     // testing full imports with `use` keyword at the start
     #[test]
     fn full_imports() {
-        let input = "use std.collections.hashmap";
+        let input = "use @std.collections.hashmap * ";
         let (rest, import) = Import::parse(input).unwrap();
         assert_eq!(
             import,
             Import {
-                span: input,
-                path: ImportPath::parse("std.collections.hashmap").unwrap().1
+                span: &input[..(input.len()-1)],
+                is_lib: true,
+                path: "std.collections.hashmap"
+                    .split('.')
+                    .map(|value| Identifier { span: value, value })
+                    .collect(),
+                items: Selection::All,
             }
         );
-        assert_eq!(rest, "");
+        assert_eq!(rest, " ");
     }
 }
