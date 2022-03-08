@@ -4,8 +4,10 @@ pub mod identifier;
 pub mod import;
 pub mod keywords;
 pub mod type_signature;
+pub mod ty;
 use body::FunctionOrTypeOrTest;
 use import::Import;
+pub use ty::Type;
 
 /// Tree representation of the syntax of a solar file
 #[derive(Clone, Debug,)]

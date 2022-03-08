@@ -46,41 +46,31 @@ impl<'a> Parse<'a> for FunctionOrTypeOrTest<'a> {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Function<'a> {
     pub span: &'a str,
-    pub generic_stub: Option<GenericStub<'a>>,
-    pub public: bool,
+    pub exported: bool,
     pub name: Identifier<'a>,
-    pub parameters: Vec<(Identifier<'a>, TypeSignature<'a>)>,
-    pub return_type: Option<TypeSignature<'a>>,
-    pub instructions: FullExpression<'a>,
+    pub args: Vec<(Identifier<'a>, Option<Type<'a>>)>,
+    pub body: FullExpression<'a>,
 }
 
 impl<'a> Parse<'a> for Function<'a> {
     fn parse(input: &'a str) -> Res<'a, Self> {
-        let (rest, generic_stub) = opt(GenericStub::parse)(input)?;
-        let (rest, public) = opt(keywords::Public::parse_ws)(rest)?;
-        let public = public.is_some();
-        // no func keyword. E.g. f(x) = x^2
+        let (rest, exported) = opt(keywords::Export::parse)(input)?;
+        let exported = exported.is_some();
         let (rest, name) = Identifier::parse_ws(rest)?;
 
-        //  (
         let (rest, _) = keywords::ParenOpen::parse_ws(rest)?;
 
-        // x Int, y Int, fac Float
-        let (rest, parameters) = separated_list0(
-            keywords::Comma::parse_ws,
-            pair(Identifier::parse_ws, TypeSignature::parse_ws),
-        )(rest)?;
+        let args = |input| {
+            let (rest, ident) = Identifier::parse_ws(input)?;
+            let (rest, ty) = opt(preceded(keywords::TypeHint::parse_ws, Type::parse_ws))(rest)?;
 
-        //  )
+            Ok((rest, (ident, ty)))
+        };
+
+        let (rest, args) = many0(args)(rest)?;
         let (rest, _) = keywords::ParenClose::parse_ws(rest)?;
 
-        let (rest, return_type) = opt(preceded(
-            keywords::ThinArrow::parse_ws,
-            TypeSignature::parse_ws,
-        ))(rest)?;
-
-        let (rest, instructions) =
-            preceded(keywords::Assign::parse_ws, FullExpression::parse_ws)(rest)?;
+        let (rest, body) = FullExpression::parse_ws(rest)?;
 
         let span = unsafe { from_to(input, rest) };
 
@@ -88,79 +78,10 @@ impl<'a> Parse<'a> for Function<'a> {
             rest,
             Function {
                 span,
-                generic_stub,
-                public,
+                exported,
                 name,
-                parameters,
-                return_type,
-                instructions,
-            },
-        ))
-    }
-}
-
-// generic A, B where C = add(A, B)
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct GenericStub<'a> {
-    pub span: &'a str,
-    pub generic_arguments: Vec<Identifier<'a>>,
-    pub where_clauses: Vec<WhereClause<'a>>,
-}
-
-impl<'a> Parse<'a> for GenericStub<'a> {
-    fn parse(input: &'a str) -> Res<'a, Self> {
-        let (rest, _) = keywords::Generic::parse(input)?;
-        // TODO no recover from here
-        // A, B, C
-        let (rest, generic_arguments) =
-            separated_list1(keywords::Comma::parse_ws, Identifier::parse_ws)(rest)?;
-        // where
-        let (rest, _) = keywords::Where::parse_ws(rest)?;
-        let (rest, where_clauses) = many0(WhereClause::parse_ws)(rest)?;
-
-        let span = unsafe { from_to(input, rest) };
-
-        Ok((
-            rest,
-            GenericStub {
-                span,
-                generic_arguments,
-                where_clauses,
-            },
-        ))
-    }
-}
-
-// C = mul(A, B)
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct WhereClause<'a> {
-    pub span: &'a str,
-    pub generic_destination: Identifier<'a>,
-    pub function: FullIdentifier<'a>,
-    pub generic_function_arguments: Vec<Identifier<'a>>,
-}
-
-impl<'a> Parse<'a> for WhereClause<'a> {
-    fn parse(input: &'a str) -> Res<'a, Self> {
-        let (rest, generic_destination) = Identifier::parse(input)?;
-        // TODO no recover after
-
-        // =
-        let (rest, _) = keywords::Assign::parse_ws(rest)?;
-
-        let (rest, function) = FullIdentifier::parse_ws(rest)?;
-
-        let (rest, generic_function_arguments) =
-            separated_list0(keywords::Comma::parse_ws, Identifier::parse_ws)(rest)?;
-
-        let span = unsafe { from_to(input, rest) };
-        Ok((
-            rest,
-            WhereClause {
-                span,
-                generic_destination,
-                function,
-                generic_function_arguments,
+                args,
+                body,
             },
         ))
     }

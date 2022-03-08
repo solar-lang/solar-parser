@@ -19,12 +19,12 @@ function
 - "let"
 - name: ident
 - "("
-- args: ( ident ("::" type)? ) ** ","
+- args: ( ident ("::" ty)? ) ** ","
 - ")"
 - "="
-- expr
+- fullexpr
 
-type
+ty
 - ident
 - type | "(" (type ** ",") ")"
 
