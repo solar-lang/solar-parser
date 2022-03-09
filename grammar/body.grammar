@@ -48,7 +48,8 @@ enumField
 -   "::" type?
 
 structField
-- "-"
+-- switch wether this field is supposed to be public
+- "-" | "+"
 - "mut"?
 - identifier
 - "::" type

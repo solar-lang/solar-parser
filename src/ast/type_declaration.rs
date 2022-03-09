@@ -7,7 +7,7 @@ use nom::{
 
 use crate::{parse::Res, util::from_to, Parse};
 
-use super::{identifier::Identifier, keywords, type_signature::TypeSignature, Type};
+use super::{identifier::Identifier, keywords, Type};
 
 /// type Either (a, b)
 /// | Left :: a
@@ -124,6 +124,7 @@ impl<'a> Parse<'a> for EnumField<'a> {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct StructField<'a> {
     pub span: &'a str,
+    pub public: bool,
     pub mutable: bool,
     pub name: Identifier<'a>,
     pub ty: Type<'a>,
@@ -131,13 +132,19 @@ pub struct StructField<'a> {
 
 impl<'a> Parse<'a> for StructField<'a> {
     fn parse(input: &'a str) -> Res<'a, Self> {
-        use keywords::{Minus, Mut, TypeHint};
+        use keywords::{Minus, Mut, Plus, TypeHint};
 
         // -
-        let (rest, _) = Minus::parse(input)?;
+        // +
+        let (rest, public) = alt((
+            // if the field starts with a -, it will be private
+            map(Minus::parse, |_| false),
+            // Otherwise it will be public
+            map(Plus::parse, |_| true),
+        ))(input)?;
 
         // mut
-        let (rest, mutable) = opt(Mut::parse_ws)(rest)?
+        let (rest, mutable) = opt(Mut::parse_ws)(rest)?;
         let mutable = mutable.is_some();
 
         // name
@@ -153,6 +160,7 @@ impl<'a> Parse<'a> for StructField<'a> {
             rest,
             StructField {
                 span,
+                public,
                 mutable,
                 name,
                 ty,
@@ -165,16 +173,26 @@ impl<'a> Parse<'a> for StructField<'a> {
 mod tests {
     use super::*;
     #[test]
-    fn types() {
+    fn type_declarations() {
         let input = [
             "type TrafficLight | Red | Yellow | Green | RedYellow",
-            "type Gender | Female | Male | Other String",
-            "type Option T | Some T | None",
-            "type Result (r, e) | Ok r | Err e",
-            "type Point - x ::  Float - y :: Float",
-            "type Point - mut x :: Float - mut y :: Float",
-            "type Point t - x :: t - y __ t",
-            "type Person - birthday :: Date - name :: String - mut preferedPronouns :: String",
+            "type Gender | Female | Male | Other :: String",
+            "type Option t | Some :: t | None",
+            "type Result (r, e) | Ok :: r | Err :: e",
+
+            "type Point
+            - x ::        Float
+            - y :: Float",
+            // public fields
+            "type Point 
+            + mut x :: Float
+            + mut y :: Float",
+            "type Point t 
+            - x :: t
+            - y :: t",
+            "type Person 
+            - birthday :: Date
+            - name :: String",
         ];
 
         for i in &input {
