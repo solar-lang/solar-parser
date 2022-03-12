@@ -1,3 +1,11 @@
+use nom::{combinator::map, sequence::terminated};
+
+use crate::{
+    ast::keywords::{ParenClose, ParenOpen},
+    parse::Res,
+    Parse,
+};
+
 pub unsafe fn from_to<'a>(start: &'a str, end: &'a str) -> &'a str {
     // TODO implement safety measures. Panic
     let length = end.as_ptr() as usize - start.as_ptr() as usize;
@@ -7,11 +15,16 @@ pub unsafe fn from_to<'a>(start: &'a str, end: &'a str) -> &'a str {
     std::str::from_utf8_unchecked(bytes)
 }
 
-use nom::{combinator::map, branch::alt};
+pub fn one_or_many<'a, I, T>(
+    parser: impl Fn(&'a str) -> Res<'a, I>,
+    separator: impl Fn(&'a str) -> Res<'a, T>,
+) -> impl Fn(&'a str) -> Res<'a, Vec<I>> {
+    move |input: &str| match ParenOpen::parse(input) {
+        Ok((rest, _)) => terminated(joined_by(&parser, &separator), ParenClose::parse_ws)(rest),
+        _ => map(&parser, |v| vec![v])(input),
+    }
+}
 
-use crate::{ast::keywords::{ParenOpen, ParenClose}, Parse};
-
-use super::parse::Res;
 /// applies a parser and in between a separator parser.
 /// Allows trailing separator at the end (long as at least one successfull parse has been applied
 pub fn joined_by<'a, I, T>(
@@ -53,7 +66,32 @@ pub fn joined_by<'a, I, T>(
 
 #[cfg(test)]
 mod tests {
-    use super::joined_by;
+    use super::*;
+
+    #[test]
+    fn list() {
+        use nom::bytes::complete::tag;
+        
+        let p = 
+            one_or_many(
+                tag("x"), 
+                tag(","));
+
+        assert_eq!(
+            p("(x,x,x,x,x,x,)"),
+            Ok(("", vec!["x", "x", "x", "x", "x", "x"]))
+        );
+
+        assert_eq!(
+            p("()"),
+            Ok(("", vec![]))
+        );
+
+        assert_eq!(
+            p("x "),
+            Ok((" ", vec!["x"]))
+        );
+    }
 
     #[test]
     fn join() {
@@ -91,3 +129,4 @@ mod tests {
         assert_eq!(result, vec![]);
     }
 }
+
