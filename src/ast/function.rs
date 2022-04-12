@@ -14,8 +14,8 @@ use crate::ast::identifier::Identifier;
 use super::{Type, keywords};
 
 /// e.g.
-/// export let fib(n :: Int) = { if (n == 0) 0 if (n == 1) 1 fib (n-1) + fib (n-2)}
-/// let string(person) = person.name
+/// export fun fib(n :: Int) = { if (n == 0) 0 if (n == 1) 1 fib (n-1) + fib (n-2)}
+/// fun string(person) = person.name
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Function<'a> {
     pub span: &'a str,
@@ -27,8 +27,14 @@ pub struct Function<'a> {
 
 impl<'a> Parse<'a> for Function<'a> {
     fn parse(input: &'a str) -> Res<'a, Self> {
+        // export
         let (rest, exported) = opt(keywords::Export::parse)(input)?;
         let exported = exported.is_some();
+
+        // fun
+        let (rest, _) = keywords::Function::parse_ws(rest)?;
+
+        // fib
         let (rest, name) = Identifier::parse_ws(rest)?;
 
         let (rest, _) = keywords::ParenOpen::parse_ws(rest)?;

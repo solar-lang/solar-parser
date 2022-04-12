@@ -67,6 +67,7 @@ keyword!(Export, "export", ident_char);
 keyword!(False, "false", ident_char);
 keyword!(FatArrow, "=>");
 keyword!(For, "for", ident_char);
+keyword!(Function, "fun", ident_char);
 keyword!(Generic, "generic", ident_char);
 keyword!(Greater, ">");
 keyword!(GreaterEqual, ">=");
