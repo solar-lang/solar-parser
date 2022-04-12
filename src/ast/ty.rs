@@ -28,7 +28,7 @@ pub enum Type<'a> {
 
 impl<'a> Parse<'a> for Type<'a> {
     fn parse(input: &'a str) -> crate::parse::Res<'a, Self> {
-        alt((parse_normal, parse_function))(input)
+        alt((parse_function, parse_normal))(input)
     }
 }
 
@@ -88,7 +88,7 @@ mod tests {
             value: "List",
         };
 
-        let generic = vec![Type {
+        let generic = vec![Type::Normal {
             span: "Int",
             name: Identifier {
                 span: "Int",
@@ -99,10 +99,38 @@ mod tests {
 
         assert_eq!(
             ty,
-            Type {
+            Type::Normal {
                 span: input,
-                info: name,
+                name,
                 generic,
+            }
+        )
+    }
+
+    #[test]
+    fn simple_function() {
+        let input = "fun(Int, Int) =>  fun  (Int)";
+        let (_, ty) = Type::parse(input).unwrap();
+
+        let int_type = Type::Normal {
+            span: "Int",
+            name: Identifier {
+                span: "Int",
+                value: "Int",
+            },
+            generic: Vec::new(),
+        };
+
+        assert_eq!(
+            ty,
+            Type::Function {
+                span: input,
+                args: vec![int_type.clone(), int_type.clone()],
+                ret: Some(Box::new(Type::Function {
+                    span: "fun  (Int)",
+                    args: vec![int_type],
+                    ret: None
+                })),
             }
         )
     }
