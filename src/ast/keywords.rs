@@ -99,7 +99,6 @@ keyword!(StringStart1, "\"");
 keyword!(StringStart2, "'");
 keyword!(Subtract, "-");
 keyword!(Test, "test", ident_char);
-keyword!(Then, "then", ident_char);
 keyword!(ThinArrow, "->");
 keyword!(True, "true", ident_char);
 keyword!(Type, "type", ident_char);

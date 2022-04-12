@@ -134,7 +134,7 @@ impl<'a> Parse<'a> for Branch<'a> {
     fn parse(input: &'a str) -> Res<'a, Self> {
         let (rest, _) = keywords::Is::parse(input)?;
         let (rest, guard) = Guard::parse_ws(rest)?;
-        let (rest, _) = keywords::Then::parse_ws(rest)?;
+        let (rest, _) = keywords::FatArrow::parse_ws(rest)?;
         let (rest, then) = FullExpression::parse_ws(rest)?;
 
         let span = unsafe { from_to(input, rest) };
