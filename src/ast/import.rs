@@ -1,3 +1,5 @@
+use nom::multi::separated_list1;
+
 use crate::{ast::identifier::Identifier, ast::*, parse::*, util::*};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -23,7 +25,7 @@ impl<'a> Parse<'a> for Import<'a> {
         let (rest, is_lib) = opt(keywords::At::parse_ws)(rest)?;
         let is_lib = is_lib.is_some();
 
-        let (rest, path) = joined_by(Identifier::parse_ws, keywords::Dot::parse_ws)(rest)?;
+        let (rest, path) = separated_list1(keywords::Dot::parse_ws, Identifier::parse_ws )(rest)?;
 
         let (rest, items) = Selection::parse_ws(rest)?;
 
@@ -53,7 +55,7 @@ impl<'a> Parse<'a> for Selection<'a> {
         use nom::branch::alt;
         use nom::combinator::map;
 
-        let all = map(keywords::Star::parse, |_| Selection::All);
+        let all = map(keywords::Spread::parse, |_| Selection::All);
 
         let items = |input| {
             let (rest, _) = keywords::ParenOpen::parse(input)?;
@@ -72,7 +74,7 @@ mod tests {
 
     #[test]
     fn imports() {
-        let input = "use std.collections (hashmap, vector, util)  ";
+        let input = "use collections.(hashmap, vector, util)  ";
         let imports = Import::parse(input);
         assert!(imports.is_ok());
         let (rest, imports) = imports.unwrap();
@@ -83,12 +85,12 @@ mod tests {
     // testing full imports with `use` keyword at the start
     #[test]
     fn full_imports() {
-        let input = "use @std.collections.hashmap * ";
+        let input = "use @std.collections.hashmap.. ";
         let (rest, import) = Import::parse(input).unwrap();
         assert_eq!(
             import,
             Import {
-                span: &input[..(input.len()-1)],
+                span: input.trim_end(),
                 is_lib: true,
                 path: "std.collections.hashmap"
                     .split('.')
