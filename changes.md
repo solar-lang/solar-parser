@@ -112,3 +112,8 @@ when list
 Reason:
 
 > Far easier to distinguish `=>` from yet another 'special identifier' (`then`)
+
+
+### Types and Pipes
+
+_use`:` for types, and `/>` for pipes_
