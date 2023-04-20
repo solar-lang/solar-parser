@@ -5,7 +5,7 @@ import
 - "use" ws+
 - islib: "@"?  wd*
 - path:     (ident ** ".")    ws+
-- all:"*"   | import.items
+- all:".."   | import.items
 
 import.items
 - "("

@@ -1,17 +1,15 @@
-use std.(io collections networking)
+use std.(io, collections, networking)
 
 use std.collections.HashMap
 
 use std..
 
-use std.(
-    collections.(
-        HashMap
-        BTreeMap
-        Array       
+use std.collections(
+        HashMap,
+        BTreeMap,
+        Array,   
     )
 
-    io..
+use std.io..
 
-    debug..
-)
+use std.debug..

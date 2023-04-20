@@ -1,1 +1,1 @@
-use std
+use @std
