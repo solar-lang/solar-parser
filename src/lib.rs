@@ -11,7 +11,7 @@ mod syntax_tests {
 
     #[test]
     fn all_files() {
-        let testdir = "./syntax_tests";
+        let testdir = "./syntax-tests";
 
         let entries = std::fs::read_dir(testdir).expect("to find directory with syntax test files");
 
@@ -24,7 +24,8 @@ mod syntax_tests {
                 continue;
             }
 
-            let content = std::fs::read_to_string(&filename).expect("read content of file");
+            let content = std::fs::read_to_string(e.path())
+                .expect(&format!("read content of file: {filename}"));
 
             let result = Ast::parse_ws(&content);
 
