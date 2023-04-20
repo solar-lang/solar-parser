@@ -47,6 +47,7 @@ impl<'a> Parse<'a> for Import<'a> {
 #[derive(PartialEq, Eq, Debug, Clone)]
 pub enum Selection<'a> {
     All,
+    This,
     Items(Vec<Identifier<'a>>),
 }
 
@@ -65,7 +66,11 @@ impl<'a> Parse<'a> for Selection<'a> {
             Ok((rest, Selection::Items(items)))
         };
 
-        alt((all, items))(input)
+        if let Ok((rest, s)) = alt((all, items))(input) {
+            Ok((rest, s))
+        } else {
+            Ok((input, Selection::This))
+        }
     }
 }
 
@@ -117,6 +122,25 @@ mod tests {
                     .map(|value| Identifier { span: value, value })
                     .collect(),
                 items: Selection::Items(vec![Identifier::parse("io").unwrap().1]),
+            }
+        );
+        assert_eq!(rest, "");
+    }
+
+    #[test]
+    fn this_imports() {
+        let input = "use @std.io";
+        let (rest, import) = Import::parse(input).unwrap();
+        assert_eq!(
+            import,
+            Import {
+                span: input,
+                is_lib: true,
+                path: "std.io"
+                    .split('.')
+                    .map(|value| Identifier { span: value, value })
+                    .collect(),
+                items: Selection::This,
             }
         );
         assert_eq!(rest, "");
