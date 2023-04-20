@@ -58,7 +58,8 @@ impl<'a> Parse<'a> for Selection<'a> {
         let all = map(keywords::Spread::parse, |_| Selection::All);
 
         let items = |input| {
-            let (rest, _) = keywords::ParenOpen::parse(input)?;
+            let (rest, _) = keywords::Dot::parse_ws(input)?;
+            let (rest, _) = keywords::ParenOpen::parse_ws(rest)?;
             let (rest, items) = joined_by(Identifier::parse_ws, keywords::Comma::parse_ws)(rest)?;
             let (rest, _) = keywords::ParenClose::parse_ws(rest)?;
             Ok((rest, Selection::Items(items)))
@@ -100,5 +101,24 @@ mod tests {
             }
         );
         assert_eq!(rest, " ");
+    }
+
+    #[test]
+    fn list_imports() {
+        let input = "use @std.(io)";
+        let (rest, import) = Import::parse(input).unwrap();
+        assert_eq!(
+            import,
+            Import {
+                span: input,
+                is_lib: true,
+                path: "std"
+                    .split('.')
+                    .map(|value| Identifier { span: value, value })
+                    .collect(),
+                items: Selection::Items(vec![Identifier::parse("io").unwrap().1]),
+            }
+        );
+        assert_eq!(rest, "");
     }
 }
