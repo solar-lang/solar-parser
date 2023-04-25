@@ -11,10 +11,12 @@ impl<'a> Parse<'a> for IdentifierPath<'a> {
         use crate::ast::keywords::Dot;
         use nom::{multi::many0, sequence::preceded};
 
+        // TODO this can be done nicer
         let (rest, first) = Identifier::parse(input)?;
         let (rest, path) = many0(preceded(Dot::parse_ws, Identifier::parse_ws))(rest)?;
         let span = unsafe { from_to(input, rest) };
 
+        // make an array of the first and the following paths
         let value = std::iter::once(first).chain(path.into_iter()).collect();
 
         Ok((rest, IdentifierPath { span, value }))

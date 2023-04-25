@@ -1,3 +1,4 @@
+mod closure;
 mod block;
 mod literal;
 mod string;
@@ -12,7 +13,7 @@ use nom::{
     branch::alt,
     combinator::{map, opt},
     multi::{many0, separated_list0},
-    sequence::{delimited, pair, terminated},
+    sequence::{delimited, terminated},
 };
 
 use crate::ast::identifier::{Identifier, IdentifierPath};
@@ -84,7 +85,7 @@ pub enum Value<'a> {
     Literal(Literal<'a>),
     IString(IString<'a>),
     FullIdentifier(IdentifierPath<'a>),
-    Closure(Closure<'a>),
+    Closure(closure::Closure<'a>),
     Array(Array<'a>),
     Abs(Abs<'a>),
     Tuple(Tuple<'a>),
@@ -106,7 +107,7 @@ impl<'a> Parse<'a> for Value<'a> {
             map(Literal::parse, Value::Literal),
             map(IString::parse, Value::IString),
             map(IdentifierPath::parse, Value::FullIdentifier),
-            map(Closure::parse, Value::Closure),
+            map(closure::Closure::parse, Value::Closure),
             map(Array::parse, Value::Array),
             map(Abs::parse, Value::Abs),
             map(Tuple::parse, Value::Tuple),
@@ -289,73 +290,6 @@ impl<'a> Parse<'a> for FunctionArg<'a> {
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Closure<'a> {
-    pub span: &'a str,
-    pub arguments: ClosureArgsKind<'a>,
-    pub body: Box<Expression<'a>>,
-}
-
-impl<'a> Parse<'a> for Closure<'a> {
-    fn parse(input: &'a str) -> Res<'a, Self> {
-        // (x)
-        let (rest, arguments) = ClosureArgsKind::parse(input)?;
-        // =>
-        let (rest, _) = keywords::FatArrow::parse_ws(rest)?;
-        // (x^2)
-        let (rest, body) = map(Expression::parse_ws, Box::new)(rest)?;
-
-        let span = unsafe { from_to(input, rest) };
-
-        Ok((
-            rest,
-            Closure {
-                span,
-                arguments,
-                body,
-            },
-        ))
-    }
-}
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum ClosureArgsKind<'a> {
-    SingleArgForm(Identifier<'a>),
-    NormalForm(ClosureArgs<'a>),
-}
-
-impl<'a> Parse<'a> for ClosureArgsKind<'a> {
-    fn parse(input: &'a str) -> Res<'a, Self> {
-        alt((
-            map(Identifier::parse, ClosureArgsKind::SingleArgForm),
-            map(ClosureArgs::parse, ClosureArgsKind::NormalForm),
-        ))(input)
-    }
-}
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct ClosureArgs<'a> {
-    pub span: &'a str,
-    pub args: Vec<(Identifier<'a>, Option<ty::Type<'a>>)>,
-}
-
-impl<'a> Parse<'a> for ClosureArgs<'a> {
-    fn parse(input: &'a str) -> Res<'a, Self> {
-        use keywords::*;
-        let (rest, args) = delimited(
-            ParenOpen::parse,
-            separated_list0(
-                Comma::parse_ws,
-                pair(Identifier::parse_ws, opt(ty::Type::parse_ws)),
-            ),
-            ParenClose::parse_ws,
-        )(input)?;
-
-        let span = unsafe { from_to(input, rest) };
-        Ok((rest, ClosureArgs { span, args }))
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -373,17 +307,6 @@ mod tests {
         };
     }
     derive_tests!(Abs, abs_expr, ["|x|", "|[1, 2, 3]|"]);
-    derive_tests!(
-        ClosureArgsKind,
-        closure_arguments,
-        [
-            "(x)",
-            "x",
-            "(x, y)",
-            "(x: Float, y: Float)",
-            "(x: Float, y: Float, info)"
-        ]
-    );
 
     derive_tests!(Array, arrays, ["[]", "[1]", "[ 1,2,3 ]", "[1, 2, ]"]);
 }
