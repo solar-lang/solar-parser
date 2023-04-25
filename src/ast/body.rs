@@ -4,6 +4,7 @@ use crate::ast::*;
 use crate::parse::*;
 use crate::util::*;
 
+use nom::combinator::cut;
 use nom::{branch::alt, combinator::map};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -48,9 +49,8 @@ impl<'a> Parse<'a> for Test<'a> {
     fn parse(input: &'a str) -> Res<'a, Self> {
         let (rest, _) = keywords::Test::parse(input)?;
 
-        // (TODO) can't recover from here on
-        let (rest, name) = expr::StringLiteral::parse_ws(rest)?;
-        let (rest, instructions) = expr::BlockExpression::parse_ws(rest)?;
+        let (rest, name) = cut(expr::StringLiteral::parse_ws)(rest)?;
+        let (rest, instructions) = cut(expr::BlockExpression::parse_ws)(rest)?;
 
         let span = unsafe { from_to(input, rest) };
 

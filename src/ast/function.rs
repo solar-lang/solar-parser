@@ -14,7 +14,7 @@ use crate::ast::identifier::Identifier;
 use super::{Type, keywords};
 
 /// e.g.
-/// export fun fib(n :: Int) = { if (n == 0) 0 if (n == 1) 1 fib (n-1) + fib (n-2)}
+/// export fun fib(n: Int) = { if (n == 0) 0 if (n == 1) 1 fib (n-1) + fib (n-2)}
 /// fun string(person) = person.name
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Function<'a> {

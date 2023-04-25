@@ -32,7 +32,7 @@ impl<'a> Parse<'a> for Type<'a> {
     }
 }
 
-fn parse_function<'a>(input: &'a str) -> crate::parse::Res<'a, Type> {
+fn parse_function(input: &str) -> crate::parse::Res<'_, Type> {
     let (rest, _) = Function::parse(input)?;
     let (rest, _) = ParenOpen::parse_ws(rest)?;
 
@@ -48,7 +48,7 @@ fn parse_function<'a>(input: &'a str) -> crate::parse::Res<'a, Type> {
     Ok((rest, Type::Function { span, args, ret }))
 }
 
-fn parse_normal<'a>(input: &'a str) -> crate::parse::Res<'a, Type> {
+fn parse_normal(input: &str) -> crate::parse::Res<'_, Type> {
     let generic_1 = map(Type::parse_ws, |t| vec![t]);
     let generic_many = |input| {
         let (rest, _) = ParenOpen::parse_ws(input)?;
@@ -60,7 +60,7 @@ fn parse_normal<'a>(input: &'a str) -> crate::parse::Res<'a, Type> {
 
     let (rest, name) = Identifier::parse(input)?;
     let (rest, generic) = opt(alt((generic_1, generic_many)))(rest)?;
-    let generic = generic.unwrap_or_else(Vec::new);
+    let generic = generic.unwrap_or_default();
 
     let span = unsafe { from_to(input, rest) };
 

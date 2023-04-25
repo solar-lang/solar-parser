@@ -10,17 +10,17 @@ use crate::{parse::Res, util::from_to, Parse};
 use super::{identifier::Identifier, keywords, Type};
 
 /// type Either (a, b)
-/// | Left :: a
-/// | Right :: b
+/// | Left: a
+/// | Right: b
 ///
 /// type Maybe x
-/// | Some :: x
+/// | Some: x
 /// | None
 ///
 /// type Person
-/// - name  :: String
-/// - age   :: Int
-/// - likesBread :: Boolean
+/// - name: String
+/// - age:  Int
+/// - likesBread: Boolean
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct TypeDecl<'a> {
     pub span: &'a str,
@@ -176,23 +176,23 @@ mod tests {
     fn type_declarations() {
         let input = [
             "type TrafficLight | Red | Yellow | Green | RedYellow",
-            "type Gender | Female | Male | Other :: String",
-            "type Option t | Some :: t | None",
-            "type Result (r, e) | Ok :: r | Err :: e",
+            "type Gender | Female | Male | Other : String",
+            "type Option t | Some : t | None",
+            "type Result (r, e) | Ok : r | Err : e",
 
             "type Point
-            - x ::        Float
-            - y :: Float",
+            - x :        Float
+            - y : Float",
             // public fields
             "type Point 
-            + mut x :: Float
-            + mut y :: Float",
+            + mut x: Float
+            + mut y: Float",
             "type Point t 
-            - x :: t
-            - y :: t",
+            - x : t
+            - y : t",
             "type Person 
-            - birthday :: Date
-            - name :: String",
+            - birthday : Date
+            - name : String",
         ];
 
         for i in &input {
