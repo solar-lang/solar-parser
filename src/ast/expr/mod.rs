@@ -17,7 +17,6 @@ use nom::{
 
 use crate::ast::identifier::{FullIdentifier, Identifier};
 use crate::{ast::*, parse::*, util::*};
-use type_signature::TypeSignature;
 use when::When;
 
 /// Expressions
@@ -337,7 +336,7 @@ impl<'a> Parse<'a> for ClosureArgsKind<'a> {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ClosureArgs<'a> {
     pub span: &'a str,
-    pub args: Vec<(Identifier<'a>, Option<TypeSignature<'a>>)>,
+    pub args: Vec<(Identifier<'a>, Option<ty::Type<'a>>)>,
 }
 
 impl<'a> Parse<'a> for ClosureArgs<'a> {
@@ -347,7 +346,7 @@ impl<'a> Parse<'a> for ClosureArgs<'a> {
             ParenOpen::parse,
             separated_list0(
                 Comma::parse_ws,
-                pair(Identifier::parse_ws, opt(TypeSignature::parse_ws)),
+                pair(Identifier::parse_ws, opt(ty::Type::parse_ws)),
             ),
             ParenClose::parse_ws,
         )(input)?;
@@ -381,8 +380,8 @@ mod tests {
             "(x)",
             "x",
             "(x, y)",
-            "(x Float, y Float)",
-            "(x Float, y Float, info)"
+            "(x: Float, y: Float)",
+            "(x: Float, y: Float, info)"
         ]
     );
 

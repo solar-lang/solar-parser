@@ -75,7 +75,7 @@ fn parse_unicode(input: &str) -> nom::IResult<&str, char> {
     // the function returns None, map_opt returns an error. In this case, because
     // not all u32 values are valid unicode code points, we have to fallibly
     // convert to char with from_u32.
-    map_opt(parse_u32, |value| std::char::from_u32(value))(input)
+    map_opt(parse_u32, std::char::from_u32)(input)
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
