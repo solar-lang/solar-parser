@@ -4,7 +4,7 @@ use std.collections.HashMap
 
 use std..
 
-use std.collections(
+use std.collections.(
         HashMap,
         BTreeMap,
         Array,   

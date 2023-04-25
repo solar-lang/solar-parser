@@ -1,4 +1,6 @@
-use nom::multi::separated_list1;
+use std::iter::repeat_with;
+
+use nom::{multi::separated_list1, combinator::cut};
 
 use crate::{ast::identifier::Identifier, ast::*, parse::*, util::*};
 
@@ -25,7 +27,7 @@ impl<'a> Parse<'a> for Import<'a> {
         let (rest, is_lib) = opt(keywords::At::parse_ws)(rest)?;
         let is_lib = is_lib.is_some();
 
-        let (rest, path) = separated_list1(keywords::Dot::parse_ws, Identifier::parse_ws )(rest)?;
+        let (rest, path) = separated_list1(keywords::Dot::parse_ws, Identifier::parse_ws)(rest)?;
 
         let (rest, items) = Selection::parse_ws(rest)?;
 
@@ -53,24 +55,19 @@ pub enum Selection<'a> {
 
 impl<'a> Parse<'a> for Selection<'a> {
     fn parse(input: &'a str) -> Res<'a, Self> {
-        use nom::branch::alt;
-        use nom::combinator::map;
-
-        let all = map(keywords::Spread::parse, |_| Selection::All);
-
-        let items = |input| {
-            let (rest, _) = keywords::Dot::parse_ws(input)?;
-            let (rest, _) = keywords::ParenOpen::parse_ws(rest)?;
-            let (rest, items) = joined_by(Identifier::parse_ws, keywords::Comma::parse_ws)(rest)?;
-            let (rest, _) = keywords::ParenClose::parse_ws(rest)?;
-            Ok((rest, Selection::Items(items)))
-        };
-
-        if let Ok((rest, s)) = alt((all, items))(input) {
-            Ok((rest, s))
-        } else {
-            Ok((input, Selection::This))
+        if let Ok((rest, _)) = keywords::Spread::parse(input) {
+            return Ok((rest, Selection::All));
         }
+
+        if let Ok((rest, _)) = keywords::Dot::parse(input) {
+            let (rest, _) = cut(keywords::ParenOpen::parse_ws)(rest)?;
+            let (rest, items) = joined_by(Identifier::parse_ws, keywords::Comma::parse_ws)(rest)?;
+            let (rest, _) = cut(keywords::ParenClose::parse_ws)(rest)?;
+
+            return Ok((rest, Selection::Items(items)));
+        }
+
+        Ok((input, Selection::This))
     }
 }
 
@@ -144,5 +141,27 @@ mod tests {
             }
         );
         assert_eq!(rest, "");
+    }
+
+    #[test]
+    fn complex_imports() {
+        let input = [
+            "use std.collections.(
+        HashMap,
+        BTreeMap,
+        Array,   
+    )",
+            "use std.(io, collections, networking)",
+            "use std.collections.HashMap",
+            "use std..",
+            "use std.io..",
+            "use std.debug..",
+        ];
+
+        for i in input {
+            let (rest, _import) = Import::parse_ws(i).unwrap();
+
+            assert_eq!(rest, "", "expect to parse '{i}' without rest");
+        }
     }
 }
