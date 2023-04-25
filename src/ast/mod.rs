@@ -1,7 +1,7 @@
 pub mod body;
 mod function;
 pub mod expr;
-mod type_declaration;
+mod structs;
 pub mod identifier;
 pub mod import;
 pub mod keywords;
@@ -11,7 +11,7 @@ use body::FunctionOrTypeOrTest;
 use import::Import;
 pub use ty::Type;
 pub use function::*;
-pub use type_declaration::*;
+pub use structs::*;
 
 /// Tree representation of the syntax of a solar file
 #[derive(Clone, Debug,)]
