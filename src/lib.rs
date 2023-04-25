@@ -25,7 +25,7 @@ mod syntax_tests {
             }
 
             let content = std::fs::read_to_string(e.path())
-                .expect(&format!("read content of file: {filename}"));
+                .unwrap_or_else(|_| panic!("read content of file: {filename}"));
 
             let result = Ast::parse_ws(&content);
 
