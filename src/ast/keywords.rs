@@ -39,9 +39,9 @@ macro_rules! keyword {
 ///
 /// e.g. tag("true") might recognize "true_value", even though it's the keyword "true" we're searching for.
 fn ident_char(input: &str) -> nom::IResult<&str, char> {
-    nom::character::complete::satisfy(|c| {
-        matches!(c, 'a'..='z' | 'A'..='Z' | '0'..='9' | '_')
-    })(input)
+    nom::character::complete::satisfy(|c| matches!(c, 'a'..='z' | 'A'..='Z' | '0'..='9' | '_'))(
+        input,
+    )
 }
 
 keyword!(Abs, "|");

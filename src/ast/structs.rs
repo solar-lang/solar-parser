@@ -179,7 +179,6 @@ mod tests {
             "type Gender | Female | Male | Other : String",
             "type Option t | Some : t | None",
             "type Result (r, e) | Ok : r | Err : e",
-
             "type Point
             - x :        Float
             - y : Float",

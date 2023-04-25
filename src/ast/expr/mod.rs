@@ -15,7 +15,7 @@ use nom::{
     sequence::{delimited, pair, terminated},
 };
 
-use crate::ast::identifier::{IdentifierPath, Identifier};
+use crate::ast::identifier::{Identifier, IdentifierPath};
 use crate::{ast::*, parse::*, util::*};
 use when::When;
 

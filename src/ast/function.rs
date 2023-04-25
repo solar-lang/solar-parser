@@ -1,17 +1,16 @@
-
 use nom::multi::many0;
 
 use nom::sequence::preceded;
 
-use nom::combinator::{opt, cut};
+use nom::combinator::{cut, opt};
 
-use crate::Parse;
 use crate::util::from_to;
+use crate::Parse;
 use crate::{ast::expr::FullExpression, parse::Res};
 
 use crate::ast::identifier::Identifier;
 
-use super::{Type, keywords};
+use super::{keywords, Type};
 
 /// e.g.
 /// export fun fib(n: Int) = { if (n == 0) 0; if (n == 1) 1; fib (n-1) + fib (n-2)}

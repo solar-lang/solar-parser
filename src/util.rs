@@ -1,6 +1,4 @@
-use crate::{
-    parse::Res,
-};
+use crate::parse::Res;
 
 pub unsafe fn from_to<'a>(start: &'a str, end: &'a str) -> &'a str {
     // TODO implement safety measures. Panic
@@ -90,4 +88,3 @@ mod tests {
         assert_eq!(result, vec![]);
     }
 }
-

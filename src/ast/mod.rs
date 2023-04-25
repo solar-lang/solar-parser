@@ -1,19 +1,19 @@
 pub mod body;
-mod function;
 pub mod expr;
-mod structs;
+mod function;
 pub mod identifier;
 pub mod import;
 pub mod keywords;
+mod structs;
 pub mod ty;
 use body::FunctionOrTypeOrTest;
-use import::Import;
-pub use ty::Type;
 pub use function::*;
+use import::Import;
 pub use structs::*;
+pub use ty::Type;
 
 /// Tree representation of the syntax of a solar file
-#[derive(Clone, Debug,)]
+#[derive(Clone, Debug)]
 pub struct Ast<'a> {
     pub span: &'a str,
     pub imports: Vec<Import<'a>>,

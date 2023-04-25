@@ -1,4 +1,4 @@
-use nom::{multi::separated_list1, combinator::cut};
+use nom::{combinator::cut, multi::separated_list1};
 
 use crate::{ast::identifier::Identifier, ast::*, parse::*, util::*};
 
