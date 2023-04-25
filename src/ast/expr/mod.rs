@@ -1,5 +1,5 @@
-mod closure;
 mod block;
+mod closure;
 mod literal;
 mod string;
 mod when;

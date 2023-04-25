@@ -63,7 +63,10 @@ impl<'a> Parse<'a> for ClosureArgs<'a> {
                 Comma::parse_ws,
                 pair(
                     Identifier::parse_ws,
-                    opt(preceded(keywords::TypeHint::parse_ws, cut(ty::Type::parse_ws))),
+                    opt(preceded(
+                        keywords::TypeHint::parse_ws,
+                        cut(ty::Type::parse_ws),
+                    )),
                 ),
             ),
             ParenClose::parse_ws,
@@ -94,10 +97,7 @@ mod tests {
     derive_tests!(
         Closure,
         closure,
-        [
-            "fun(x)=> x+2",
-            "fun (x, y)-> Int => x + y",
-        ]
+        ["fun(x)=> x+2", "fun (x, y)-> Int => x + y",]
     );
 
     derive_tests!(
