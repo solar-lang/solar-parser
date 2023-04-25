@@ -12,6 +12,7 @@ use crate::ast::identifier::Identifier;
 
 use super::{keywords, Type};
 
+/// Represents a function declaration.
 /// e.g.
 /// export fun fib(n: Int) = { if (n == 0) 0; if (n == 1) 1; fib (n-1) + fib (n-2)}
 /// fun string(person) = person.name
@@ -47,9 +48,12 @@ impl<'a> Parse<'a> for Function<'a> {
         };
 
         let (rest, args) = many0(args)(rest)?;
+
         let (rest, _) = keywords::ParenClose::parse_ws(rest)?;
 
         let (rest, ret) = opt(preceded(keywords::ThinArrow::parse_ws, cut(Type::parse_ws)))(rest)?;
+
+        let (rest, _) = keywords::Assign::parse_ws(rest)?;
 
         let (rest, body) = FullExpression::parse_ws(rest)?;
 
@@ -66,5 +70,29 @@ impl<'a> Parse<'a> for Function<'a> {
                 body,
             },
         ))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn simple_fn() {
+        let input = "fun main() = println 'hello'";
+        let expected = Function {
+            body: FullExpression::from_str("println 'hello'"),
+            span: input,
+            ret: None,
+            exported: false,
+            name: Identifier::from_str("main"),
+            args: Vec::new(),
+        };
+
+        let (rest, got) = Function::parse(input).unwrap();
+
+        assert_eq!(rest, "", "expect to consume entire input");
+
+        assert_eq!(got, expected);
     }
 }

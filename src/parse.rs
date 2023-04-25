@@ -11,6 +11,10 @@ where
     fn parse_ws(input: &'a str) -> Res<'a, Self> {
         ws(Self::parse)(input)
     }
+
+    fn from_str(input: &'a str) -> Self {
+        Self::parse_ws(input).unwrap().1
+    }
 }
 
 pub trait Combinator<O> {
