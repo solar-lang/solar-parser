@@ -5,7 +5,6 @@ mod structs;
 pub mod identifier;
 pub mod import;
 pub mod keywords;
-pub mod type_signature;
 pub mod ty;
 use body::FunctionOrTypeOrTest;
 use import::Import;

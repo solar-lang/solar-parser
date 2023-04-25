@@ -64,12 +64,12 @@ impl<'a> Parse<'a> for ArrayGuard<'a> {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ObjectGuard<'a> {
     pub span: &'a str,
-    pub struct_identifier: FullIdentifier<'a>,
+    pub struct_identifier: IdentifierPath<'a>,
     pub fields: Vec<(Identifier<'a>, SubfieldGuard<'a>)>,
 }
 impl<'a> Parse<'a> for ObjectGuard<'a> {
     fn parse(input: &'a str) -> Res<'a, Self> {
-        let (rest, struct_identifier) = FullIdentifier::parse_ws(input)?;
+        let (rest, struct_identifier) = IdentifierPath::parse_ws(input)?;
         let (rest, fields) = many0(pair(Identifier::parse_ws, SubfieldGuard::parse_ws))(rest)?;
 
         let span = unsafe { from_to(input, rest) };

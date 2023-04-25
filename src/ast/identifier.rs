@@ -1,13 +1,12 @@
 use crate::{parse::*, util::from_to};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-#[deprecated]
-pub struct FullIdentifier<'a> {
+pub struct IdentifierPath<'a> {
     pub span: &'a str,
     pub value: Vec<Identifier<'a>>,
 }
 
-impl<'a> Parse<'a> for FullIdentifier<'a> {
+impl<'a> Parse<'a> for IdentifierPath<'a> {
     fn parse(input: &'a str) -> Res<'a, Self> {
         use crate::ast::keywords::Dot;
         use nom::{multi::many0, sequence::preceded};
@@ -18,7 +17,7 @@ impl<'a> Parse<'a> for FullIdentifier<'a> {
 
         let value = std::iter::once(first).chain(path.into_iter()).collect();
 
-        Ok((rest, FullIdentifier { span, value }))
+        Ok((rest, IdentifierPath { span, value }))
     }
 }
 
@@ -106,7 +105,7 @@ mod tests {
     #[test]
     fn fullidents() {
         let span = "hello.world 7";
-        let res = FullIdentifier::parse(span);
+        let res = IdentifierPath::parse(span);
 
         assert!(res.is_ok());
         let res = res.unwrap();

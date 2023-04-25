@@ -15,7 +15,7 @@ use nom::{
     sequence::{delimited, pair, terminated},
 };
 
-use crate::ast::identifier::{FullIdentifier, Identifier};
+use crate::ast::identifier::{IdentifierPath, Identifier};
 use crate::{ast::*, parse::*, util::*};
 use when::When;
 
@@ -83,7 +83,7 @@ mod value_tests {
 pub enum Value<'a> {
     Literal(Literal<'a>),
     IString(IString<'a>),
-    FullIdentifier(FullIdentifier<'a>),
+    FullIdentifier(IdentifierPath<'a>),
     Closure(Closure<'a>),
     Array(Array<'a>),
     Abs(Abs<'a>),
@@ -105,7 +105,7 @@ impl<'a> Parse<'a> for Value<'a> {
         let (rest, value) = alt((
             map(Literal::parse, Value::Literal),
             map(IString::parse, Value::IString),
-            map(FullIdentifier::parse, Value::FullIdentifier),
+            map(IdentifierPath::parse, Value::FullIdentifier),
             map(Closure::parse, Value::Closure),
             map(Array::parse, Value::Array),
             map(Abs::parse, Value::Abs),
@@ -249,13 +249,13 @@ impl<'a> Parse<'a> for Array<'a> {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct FunctionCall<'a> {
     pub span: &'a str,
-    pub function_name: FullIdentifier<'a>,
+    pub function_name: IdentifierPath<'a>,
     pub args: Vec<FunctionArg<'a>>,
 }
 
 impl<'a> Parse<'a> for FunctionCall<'a> {
     fn parse(input: &'a str) -> Res<'a, Self> {
-        let (rest, function_name) = FullIdentifier::parse(input)?;
+        let (rest, function_name) = IdentifierPath::parse(input)?;
         let (rest, args) = many0(FunctionArg::parse_ws)(rest)?;
 
         let span = unsafe { from_to(input, rest) };
