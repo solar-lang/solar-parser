@@ -3,7 +3,7 @@ use nom::multi::many0;
 
 use nom::sequence::preceded;
 
-use nom::combinator::opt;
+use nom::combinator::{opt, cut};
 
 use crate::Parse;
 use crate::util::from_to;
@@ -14,7 +14,7 @@ use crate::ast::identifier::Identifier;
 use super::{Type, keywords};
 
 /// e.g.
-/// export fun fib(n: Int) = { if (n == 0) 0 if (n == 1) 1 fib (n-1) + fib (n-2)}
+/// export fun fib(n: Int) = { if (n == 0) 0; if (n == 1) 1; fib (n-1) + fib (n-2)}
 /// fun string(person) = person.name
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Function<'a> {
@@ -22,6 +22,7 @@ pub struct Function<'a> {
     pub exported: bool,
     pub name: Identifier<'a>,
     pub args: Vec<(Identifier<'a>, Option<Type<'a>>)>,
+    pub ret: Option<Type<'a>>,
     pub body: FullExpression<'a>,
 }
 
@@ -49,6 +50,8 @@ impl<'a> Parse<'a> for Function<'a> {
         let (rest, args) = many0(args)(rest)?;
         let (rest, _) = keywords::ParenClose::parse_ws(rest)?;
 
+        let (rest, ret) = opt(preceded(keywords::ThinArrow::parse_ws, cut(Type::parse_ws)))(rest)?;
+
         let (rest, body) = FullExpression::parse_ws(rest)?;
 
         let span = unsafe { from_to(input, rest) };
@@ -60,6 +63,7 @@ impl<'a> Parse<'a> for Function<'a> {
                 exported,
                 name,
                 args,
+                ret,
                 body,
             },
         ))
