@@ -124,9 +124,9 @@ impl<'a> ParseExpression<'a> for Pipe<'a> {
         Ok((rest, expr))
     }
 }
-impl<'a> Into<FullExpression<'a>> for Pipe<'a> {
-    fn into(self) -> FullExpression<'a> {
-        FullExpression::Pipe(self)
+impl<'a> From<Pipe<'a>> for FullExpression<'a> {
+    fn from(val: Pipe<'a>) -> Self {
+        FullExpression::Pipe(val)
     }
 }
 

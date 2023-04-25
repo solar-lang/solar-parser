@@ -99,7 +99,7 @@ pub enum IntTypeSuffix {
 }
 
 fn number(c: char) -> bool {
-    c >= '0' && c <= '9'
+    c.is_ascii_digit()
 }
 
 fn parse_type_suffix(input: &str) -> Res<Option<IntTypeSuffix>> {
@@ -122,7 +122,7 @@ fn parse_type_suffix(input: &str) -> Res<Option<IntTypeSuffix>> {
 fn hex(i: &str) -> Res<Int> {
     let (rest, digits) = preceded(
         tag("0x"),
-        take_while1(|c| number(c) || c >= 'A' && c <= 'F' || c >= 'a' && c <= 'f'),
+        take_while1(|c| number(c) || ('A'..='F').contains(&c) || ('a'..='f').contains(&c)),
     )(i)?;
     let (rest, type_suffix) = parse_type_suffix(rest)?;
     let span = unsafe { from_to(i, rest) };
@@ -140,7 +140,7 @@ fn hex(i: &str) -> Res<Int> {
 
 /// parses an octal number
 fn oct(i: &str) -> Res<Int> {
-    let (rest, digits) = preceded(tag("0o"), take_while1(|c| c >= '0' && c <= '7'))(i)?;
+    let (rest, digits) = preceded(tag("0o"), take_while1(|c| ('0'..='7').contains(&c)))(i)?;
     let (rest, type_suffix) = parse_type_suffix(rest)?;
     let span = unsafe { from_to(i, rest) };
 
@@ -195,7 +195,7 @@ impl<'a> Parse<'a> for Int<'a> {
     }
 }
 
-fn parse_float<'a>(input: &'a str) -> Res<'a, &'a str> {
+fn parse_float(input: &str) -> Res<'_, &str> {
     let neg = opt(char('-'));
     let num = take_while1(number);
     let dot = char('.');
@@ -215,7 +215,7 @@ mod float_tests {
     fn float_value() {
         let inputs = ["3.14", "314.e-2", "-1.", "-1.0", "-1.0e20"];
         for input in inputs.iter() {
-            let (rest, _) = parse_float(&input).unwrap();
+            let (rest, _) = parse_float(input).unwrap();
             assert_eq!(rest, "");
         }
     }

@@ -35,11 +35,11 @@ impl<'a> PartialEq<&str> for Identifier<'a> {
 }
 
 fn isalpha(c: char) -> bool {
-    c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z'
+    c.is_ascii_lowercase() || c.is_ascii_uppercase()
 }
 
 fn isnumber(c: char) -> bool {
-    c >= '0' && c <= '9'
+    c.is_ascii_digit()
 }
 
 impl<'a> Parse<'a> for Identifier<'a> {
@@ -54,7 +54,7 @@ impl<'a> Parse<'a> for Identifier<'a> {
             !(is_keyword(value) ||
 
             // may not end with underscore
-             value.ends_with("_") ||
+             value.ends_with('_') ||
 
             // may not contain double underscores __.
              value.contains("__"))

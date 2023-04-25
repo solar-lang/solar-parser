@@ -1,5 +1,3 @@
-use std::iter::repeat_with;
-
 use nom::{multi::separated_list1, combinator::cut};
 
 use crate::{ast::identifier::Identifier, ast::*, parse::*, util::*};
