@@ -29,8 +29,8 @@ impl<'a> Parse<'a> for Closure<'a> {
         // -> Int
         let (rest, ret) = opt(preceded(keywords::ThinArrow::parse, cut(Type::parse_ws)))(rest)?;
 
-        // =
-        let (rest, _) = keywords::Assign::parse_ws(rest)?;
+        // =>
+        let (rest, _) = keywords::FatArrow::parse_ws(rest)?;
         // x^2
         let (rest, body) = map(expr::FullExpression::parse_ws, Box::new)(rest)?;
 
@@ -90,12 +90,21 @@ mod tests {
             }
         };
     }
+
     derive_tests!(
-        ClosureArgsKind,
+        Closure,
+        closure,
+        [
+            "fun(x)=> x+2",
+            "fun (x, y)-> Int => x + y",
+        ]
+    );
+
+    derive_tests!(
+        ClosureArgs,
         closure_arguments,
         [
             "(x)",
-            "x",
             "(x, y)",
             "(x: Float, y: Float)",
             "(x: Float, y: Float, info)"
