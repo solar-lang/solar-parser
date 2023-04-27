@@ -6,7 +6,7 @@ pub mod import;
 pub mod keywords;
 mod structs;
 pub mod ty;
-use body::FunctionOrTypeOrTest;
+use body::BodyItem;
 pub use function::*;
 use import::Import;
 pub use structs::*;
@@ -17,7 +17,7 @@ pub use ty::Type;
 pub struct Ast<'a> {
     pub span: &'a str,
     pub imports: Vec<Import<'a>>,
-    pub functions_and_types_and_tests: Vec<FunctionOrTypeOrTest<'a>>,
+    pub items: Vec<BodyItem<'a>>,
 }
 
 impl<'a> crate::parse::Parse<'a> for Ast<'a> {
@@ -25,7 +25,7 @@ impl<'a> crate::parse::Parse<'a> for Ast<'a> {
         use nom::multi::many0;
 
         let (rest, imports) = many0(Import::parse_ws)(input)?;
-        let (rest, functions_and_types_and_tests) = many0(FunctionOrTypeOrTest::parse_ws)(rest)?;
+        let (rest, functions_and_types_and_tests) = many0(BodyItem::parse_ws)(rest)?;
 
         let span = unsafe { crate::util::from_to(input, rest) };
 
@@ -34,7 +34,7 @@ impl<'a> crate::parse::Parse<'a> for Ast<'a> {
             Ast {
                 span,
                 imports,
-                functions_and_types_and_tests,
+                items: functions_and_types_and_tests,
             },
         ))
     }

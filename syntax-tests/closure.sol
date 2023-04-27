@@ -1,2 +1,2 @@
 
-let x = fun(x: Int) => x^2
+fun makeExp(e: Int) = fun(x: Int) => x^e

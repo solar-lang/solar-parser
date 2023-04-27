@@ -8,15 +8,15 @@ use nom::combinator::cut;
 use nom::{branch::alt, combinator::map};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum FunctionOrTypeOrTest<'a> {
+pub enum BodyItem<'a> {
     Function(function::Function<'a>),
     TypeDecl(TypeDecl<'a>),
     Test(Test<'a>),
 }
 
-impl<'a> FunctionOrTypeOrTest<'a> {
+impl<'a> BodyItem<'a> {
     pub fn span(&self) -> &str {
-        use FunctionOrTypeOrTest::*;
+        use BodyItem::*;
         match self {
             Function(f) => f.span,
             TypeDecl(t) => t.span,
@@ -25,12 +25,12 @@ impl<'a> FunctionOrTypeOrTest<'a> {
     }
 }
 
-impl<'a> Parse<'a> for FunctionOrTypeOrTest<'a> {
+impl<'a> Parse<'a> for BodyItem<'a> {
     fn parse(input: &'a str) -> Res<'a, Self> {
         alt((
-            map(Test::parse, FunctionOrTypeOrTest::Test),
-            map(TypeDecl::parse, FunctionOrTypeOrTest::TypeDecl),
-            map(function::Function::parse, FunctionOrTypeOrTest::Function),
+            map(Test::parse, BodyItem::Test),
+            map(TypeDecl::parse, BodyItem::TypeDecl),
+            map(function::Function::parse, BodyItem::Function),
         ))(input)
     }
 }
