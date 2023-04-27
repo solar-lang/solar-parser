@@ -1,9 +1,9 @@
 mod block;
 mod closure;
+mod let_in;
 mod literal;
 mod string;
 mod when;
-mod let_in;
 pub use string::*;
 pub mod full;
 pub use block::BlockExpression;

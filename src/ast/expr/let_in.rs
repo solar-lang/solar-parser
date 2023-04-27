@@ -1,4 +1,9 @@
-use crate::{Parse, ast::{identifier::Identifier, keywords}, parse::Res, util::{from_to, joined_by1}};
+use crate::{
+    ast::{identifier::Identifier, keywords},
+    parse::Res,
+    util::{from_to, joined_by1},
+    Parse,
+};
 
 use super::FullExpression;
 
@@ -22,17 +27,23 @@ impl<'a> Parse<'a> for LetExpression<'a> {
         }
 
         let (rest, definitions) = joined_by1(item, keywords::Comma::parse_ws)(rest)?;
-        
+
         let (rest, _) = keywords::In::parse_ws(rest)?;
-        
-        let (rest, body) = FullExpression::parse_ws(rest)        ?;
+
+        let (rest, body) = FullExpression::parse_ws(rest)?;
 
         let span = unsafe { from_to(input, rest) };
 
-        Ok((rest, LetExpression { span, definitions, body }))
+        Ok((
+            rest,
+            LetExpression {
+                span,
+                definitions,
+                body,
+            },
+        ))
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -48,7 +59,10 @@ mod tests {
             let_in_expression,
             LetExpression {
                 span: input,
-                definitions: vec![(Identifier::parse_ws(" square").unwrap().1, FullExpression::parse_ws(" x*x").unwrap().1)],
+                definitions: vec![(
+                    Identifier::parse_ws(" square").unwrap().1,
+                    FullExpression::parse_ws(" x*x").unwrap().1
+                )],
                 body: FullExpression::parse_ws(" {something}").unwrap().1,
             }
         );
