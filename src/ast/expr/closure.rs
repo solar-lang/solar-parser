@@ -97,7 +97,7 @@ mod tests {
     derive_tests!(
         Closure,
         closure,
-        ["fun(x)=> x+2", "fun (x, y)-> Int => x + y",]
+        ["fun(x)=> x+2", "fun (x, y)-> Int => x + y", "fun () => 7"]
     );
 
     derive_tests!(
@@ -105,6 +105,7 @@ mod tests {
         closure_arguments,
         [
             "(x)",
+            "()",
             "(x, y)",
             "(x: Float, y: Float)",
             "(x: Float, y: Float, info)"

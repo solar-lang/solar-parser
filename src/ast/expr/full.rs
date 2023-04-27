@@ -18,13 +18,13 @@ pub enum FullExpression<'a> {
     // Rarely used, because mostly Value::Power takes precedence.
     Power(Power<'a>),
 
-    // list : filter ft : map n * 3 ++ [end_elem]
+    // list /> filter ft : map n * 3 ++ [end_elem]
     // <=>
-    // ( list : filter ft : map n ) * 3 ++ [end_elem]
+    // ( list /> filter ft : map n ) * 3 ++ [end_elem]
     //
-    // list : filter ft : map n^3 ++ [end_elem]
+    // list /> filter ft : map n^3 ++ [end_elem]
     // <=>
-    // list : filter ft : map ( n^3 ) ++ [end_elem]
+    // list /> filter ft : map ( n^3 ) ++ [end_elem]
     Pipe(Pipe<'a>),
 
     // // direct field access
@@ -103,7 +103,7 @@ impl<'a> ParseExpression<'a> for Pipe<'a> {
         let expr = Box::new(expr);
 
         let mut parse_function_chain_ws =
-            many1(preceded(keywords::Colon::parse_ws, FunctionCall::parse_ws));
+            many1(preceded(keywords::Pipe::parse_ws, FunctionCall::parse_ws));
 
         if let Ok((rest, function_chain)) = parse_function_chain_ws(rest) {
             let span = unsafe { from_to(input, rest) };
@@ -213,12 +213,12 @@ mod tests {
             "x+y+z+9",
             "x+y+z+9 + 10",
             "(x+y)*7",
-            "(x+y) : double",
+            "(x+y) /> double",
             "n^8",
             "√2",
             "!true or a",
-            "n/8+9:something",
-            "list : filter ft : map n * 3 ++ [end_elem]",
+            "n/8+9/>something",
+            "list /> filter ft /> map n * 3 ++ [end_elem]",
             "cos x*2",
             "(cos x)*2",
         ];
@@ -231,7 +231,7 @@ mod tests {
 
     #[test]
     fn pipe_test() {
-        let input = "[1, 2, 3] : map f : add √4";
+        let input = "[1, 2, 3] /> map f /> add √4";
         let (rest, _expr) = FullExpression::parse(input).unwrap();
         assert_eq!(rest, "");
     }
