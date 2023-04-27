@@ -40,7 +40,7 @@ pub struct ArrayGuard<'a> {
 impl<'a> Parse<'a> for ArrayGuard<'a> {
     fn parse(input: &'a str) -> Res<'a, Self> {
         let (rest, _) = keywords::ParenClose::parse(input)?;
-        let (rest, subguards) = joined_by(Guard::parse_ws, keywords::Comma::parse_ws)(rest)?;
+        let (rest, subguards) = joined_by0(Guard::parse_ws, keywords::Comma::parse_ws)(rest)?;
         let (rest, tail) = opt(delimited(
             keywords::Comma::parse_ws,
             Identifier::parse_ws,

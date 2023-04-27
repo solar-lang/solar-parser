@@ -1,0 +1,9 @@
+-- vim: syntax=haskell:
+
+-- sugar to assert fields of a struct without the
+-- trouble to write (x) or (7)
+-- and instead directly write down the literal x or 7
+
+'let' <identifer> '=' <expr>
+      ( ',' <identifer> '=' <expr> )*
+      'in'

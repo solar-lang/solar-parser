@@ -59,7 +59,7 @@ impl<'a> Parse<'a> for Selection<'a> {
 
         if let Ok((rest, _)) = keywords::Dot::parse(input) {
             let (rest, _) = cut(keywords::ParenOpen::parse_ws)(rest)?;
-            let (rest, items) = joined_by(Identifier::parse_ws, keywords::Comma::parse_ws)(rest)?;
+            let (rest, items) = joined_by0(Identifier::parse_ws, keywords::Comma::parse_ws)(rest)?;
             let (rest, _) = cut(keywords::ParenClose::parse_ws)(rest)?;
 
             return Ok((rest, Selection::Items(items)));

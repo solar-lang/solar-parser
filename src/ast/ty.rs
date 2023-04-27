@@ -5,7 +5,7 @@ use nom::{
 };
 
 use crate::{
-    util::{from_to, joined_by},
+    util::{from_to, joined_by0},
     Parse,
 };
 
@@ -37,7 +37,7 @@ fn parse_function(input: &str) -> crate::parse::Res<'_, Type> {
     let (rest, _) = ParenOpen::parse_ws(rest)?;
 
     // Int, Int
-    let (rest, args) = joined_by(Type::parse_ws, Comma::parse_ws)(rest)?;
+    let (rest, args) = joined_by0(Type::parse_ws, Comma::parse_ws)(rest)?;
 
     let (rest, _) = ParenClose::parse_ws(rest)?;
 
@@ -52,7 +52,7 @@ fn parse_normal(input: &str) -> crate::parse::Res<'_, Type> {
     let generic_1 = map(Type::parse_ws, |t| vec![t]);
     let generic_many = |input| {
         let (rest, _) = ParenOpen::parse_ws(input)?;
-        let (rest, items) = joined_by(Type::parse_ws, Comma::parse_ws)(rest)?;
+        let (rest, items) = joined_by0(Type::parse_ws, Comma::parse_ws)(rest)?;
         let (rest, _) = ParenClose::parse_ws(rest)?;
 
         Ok((rest, items))
