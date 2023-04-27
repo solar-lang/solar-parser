@@ -1,5 +1,4 @@
 use nom::{
-    branch::alt,
     combinator::{cut, map, opt},
     multi::separated_list0,
     sequence::{delimited, pair, preceded},
@@ -7,8 +6,6 @@ use nom::{
 
 use crate::ast::identifier::Identifier;
 use crate::{ast::*, parse::*, util::*};
-
-use super::Expression;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Closure<'a> {
@@ -24,7 +21,7 @@ impl<'a> Parse<'a> for Closure<'a> {
         let (rest, _) = keywords::Function::parse(input)?;
 
         // (x)
-        let (rest, arguments) = ClosureArgs::parse(rest)?;
+        let (rest, arguments) = ClosureArgs::parse_ws(rest)?;
 
         // -> Int
         let (rest, ret) = opt(preceded(keywords::ThinArrow::parse, cut(Type::parse_ws)))(rest)?;
@@ -69,7 +66,7 @@ impl<'a> Parse<'a> for ClosureArgs<'a> {
                     )),
                 ),
             ),
-            ParenClose::parse_ws,
+            cut(ParenClose::parse_ws),
         )(input)?;
 
         let span = unsafe { from_to(input, rest) };
