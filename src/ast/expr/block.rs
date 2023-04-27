@@ -157,37 +157,6 @@ impl<'a> Parse<'a> for Loop<'a> {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Let<'a> {
-    pub span: &'a str,
-    pub identifier: Identifier<'a>,
-    pub expr: FullExpression<'a>,
-}
-
-impl<'a> Parse<'a> for Let<'a> {
-    fn parse(input: &'a str) -> Res<'a, Self> {
-        let (rest, (identifier, expr)) = pair(
-            delimited(
-                keywords::Let::parse,
-                Identifier::parse_ws,
-                keywords::Assign::parse_ws,
-            ),
-            FullExpression::parse_ws,
-        )(input)?;
-
-        let span = unsafe { from_to(input, rest) };
-
-        Ok((
-            rest,
-            Let {
-                span,
-                identifier,
-                expr,
-            },
-        ))
-    }
-}
-
-#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Return<'a> {
     pub span: &'a str,
     pub value: Option<FullExpression<'a>>,
