@@ -1,6 +1,6 @@
 
 fun main() =
-    let n = readline;
+    let n = readline,
         g = greet n
         in
             println g

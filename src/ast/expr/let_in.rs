@@ -1,3 +1,5 @@
+use nom::combinator::cut;
+
 use crate::{
     ast::{identifier::Identifier, keywords},
     parse::Res,
@@ -20,15 +22,15 @@ impl<'a> Parse<'a> for LetExpression<'a> {
 
         fn item(s: &str) -> Res<'_, (Identifier<'_>, FullExpression<'_>)> {
             let (rest, ident) = Identifier::parse_ws(s)?;
-            let (rest, _) = keywords::Assign::parse_ws(rest)?;
-            let (rest, expr) = FullExpression::parse_ws(rest)?;
+            let (rest, _) = cut(keywords::Assign::parse_ws)(rest)?;
+            let (rest, expr) = cut(FullExpression::parse_ws)(rest)?;
 
             Ok((rest, (ident, expr)))
         }
 
         let (rest, definitions) = joined_by1(item, keywords::Comma::parse_ws)(rest)?;
 
-        let (rest, _) = keywords::In::parse_ws(rest)?;
+        let (rest, _) = cut(keywords::In::parse_ws)(rest)?;
 
         let (rest, body) = FullExpression::parse_ws(rest)?;
 
