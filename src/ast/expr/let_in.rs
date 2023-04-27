@@ -69,4 +69,12 @@ mod tests {
             }
         );
     }
+
+    #[test]
+    fn let_in_2() {
+        let input = "let n = readline,\n        g = greet n\n        in\n            println g";
+        let (rest, _) = LetExpression::parse(input).unwrap();
+
+        assert_eq!(rest, "", "expect to consume all input");
+    }
 }

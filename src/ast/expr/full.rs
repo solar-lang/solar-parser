@@ -1,10 +1,19 @@
 // full expression
 
+use nom::branch::alt;
+use nom::combinator::map;
+
+use crate::ast::body::Let;
 use crate::ast::expr::{Expression, FunctionCall};
 use crate::{ast::*, parse::*, util::*};
 
+use super::let_in::LetExpression;
+use super::BlockExpression;
+
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum FullExpression<'a> {
+    Let(Box<LetExpression<'a>>),
+
     Or(Or<'a>),
     And(And<'a>),
     Concat(Concat<'a>),
@@ -34,7 +43,10 @@ pub enum FullExpression<'a> {
 
 impl<'a> Parse<'a> for FullExpression<'a> {
     fn parse(input: &'a str) -> Res<'a, Self> {
-        Or::parse(input)
+        alt((
+            map(LetExpression::parse, |l| FullExpression::Let(Box::new(l))),
+            Or::parse,
+        ))(input)
     }
 }
 
@@ -203,6 +215,9 @@ mod tests {
     fn cheap_tests() {
         let input = [
             "x + y^2 + z + 9",
+            "let x = 8 in x*2",
+            "let x = 8 in x*2 + (let n = 7 in n+1)",
+            "let x = 8, y = 9 in x*2 + (let n = 7 in n+y)",
             "x",
             "(x)",
             "x+y",
