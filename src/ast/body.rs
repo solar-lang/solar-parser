@@ -5,13 +5,18 @@ use crate::parse::*;
 use crate::util::*;
 
 use nom::combinator::cut;
+use nom::sequence::{delimited, pair};
 use nom::{branch::alt, combinator::map};
+
+use super::expr::FullExpression;
+use super::identifier::Identifier;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum BodyItem<'a> {
     Function(function::Function<'a>),
     TypeDecl(TypeDecl<'a>),
     Test(Test<'a>),
+    Let(Let<'a>),
 }
 
 impl<'a> BodyItem<'a> {
@@ -21,6 +26,7 @@ impl<'a> BodyItem<'a> {
             Function(f) => f.span,
             TypeDecl(t) => t.span,
             Test(t) => t.span,
+            Let(l) => l.span,
         }
     }
 }
@@ -31,6 +37,7 @@ impl<'a> Parse<'a> for BodyItem<'a> {
             map(Test::parse, BodyItem::Test),
             map(TypeDecl::parse, BodyItem::TypeDecl),
             map(function::Function::parse, BodyItem::Function),
+            map(Let::parse, BodyItem::Let),
         ))(input)
     }
 }
@@ -60,6 +67,37 @@ impl<'a> Parse<'a> for Test<'a> {
                 span,
                 name,
                 instructions,
+            },
+        ))
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct Let<'a> {
+    pub span: &'a str,
+    pub identifier: Identifier<'a>,
+    pub expr: FullExpression<'a>,
+}
+
+impl<'a> Parse<'a> for Let<'a> {
+    fn parse(input: &'a str) -> Res<'a, Self> {
+        let (rest, (identifier, expr)) = pair(
+            delimited(
+                keywords::Let::parse,
+                Identifier::parse_ws,
+                keywords::Assign::parse_ws,
+            ),
+            FullExpression::parse_ws,
+        )(input)?;
+
+        let span = unsafe { from_to(input, rest) };
+
+        Ok((
+            rest,
+            Let {
+                span,
+                identifier,
+                expr,
             },
         ))
     }

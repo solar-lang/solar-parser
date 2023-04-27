@@ -7,12 +7,18 @@ functionOrTypeOrTest
 / function
 / typeDecl
 / test
+/ let
 
 test
 - "test"
 - string
 - blockexpression
 
+let
+- "let"
+- ident
+- "="
+- fullexpr
 
 function
 - export: "export"? ws*
