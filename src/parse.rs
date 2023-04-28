@@ -9,7 +9,23 @@ where
     fn parse(input: &'a str) -> Res<'a, Self>;
 
     fn parse_ws(input: &'a str) -> Res<'a, Self> {
-        ws(Self::parse)(input)
+        let input = input.trim_start();
+
+        // if rest starts with a comment, go to end of line
+        if let Some(rest) = input.strip_prefix('#') {
+            // index of the end of the line
+            let index = rest.find('\n');
+            if index.is_none() {
+                return Self::parse_ws("");
+            }
+            let index = index.unwrap() + 1;
+
+            // jump to the end of the line, and repeat the whitespace parsing
+            let input = &rest[index..];
+            return Self::parse_ws(input);
+        }
+
+        Self::parse(input)
     }
 
     fn from_str(input: &'a str) -> Self {
