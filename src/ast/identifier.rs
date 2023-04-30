@@ -29,6 +29,12 @@ pub struct Identifier<'a> {
     pub value: &'a str,
 }
 
+impl<'a> PartialOrd<&str> for Identifier<'a> {
+    fn partial_cmp(&self, other: &&str) -> Option<std::cmp::Ordering> {
+        self.value.partial_cmp(other)
+    }
+}
+
 impl<'a> PartialEq<&str> for Identifier<'a> {
     fn eq(&self, other: &&str) -> bool {
         self.value == *other
