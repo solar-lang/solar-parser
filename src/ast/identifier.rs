@@ -1,4 +1,4 @@
-use crate::{parse::*, util::from_to};
+use crate::{ast::keywords, parse::*, util::from_to};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct IdentifierPath<'a> {
@@ -51,6 +51,12 @@ fn isnumber(c: char) -> bool {
 
 impl<'a> Parse<'a> for Identifier<'a> {
     fn parse(input: &'a str) -> Res<'a, Self> {
+        // Accept & as a valid identifier
+        if let Ok((rest, value)) = keywords::Identity::parse(input) {
+            let value = value.span;
+            return Ok((rest, Identifier { span: value, value }));
+        }
+
         use nom::bytes::complete::{take_while, take_while1};
         use nom::combinator::{recognize, verify};
         use nom::sequence::pair;

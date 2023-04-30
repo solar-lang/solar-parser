@@ -107,3 +107,4 @@ keyword!(TypeHint, ":");
 keyword!(Use, "use", ident_char);
 keyword!(When, "when", ident_char);
 keyword!(Where, "where", ident_char);
+keyword!(Identity, "&");
