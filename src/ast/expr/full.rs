@@ -7,6 +7,7 @@ use crate::ast::expr::{Expression, FunctionCall};
 use crate::{ast::*, parse::*, util::*};
 
 use super::let_in::LetExpression;
+use super::FunctionArg;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum FullExpression<'a> {
@@ -102,6 +103,55 @@ macro_rules! create_ast_expr {
                 }
 
                 Ok((rest, left.into()))
+            }
+        }
+
+        impl<'a> $name<'a> {
+            pub fn to_expr(&'a self) -> Expression<'a> {
+                // For now, this does not
+                let span = self.span;
+
+                let function_name = identifier::IdentifierPath {
+                    span,
+                    value: vec![identifier::Identifier {
+                        span,
+                        value: "concat".into(),
+                    }],
+                };
+
+                let left = {
+                    let span = self.left.span();
+
+                    FunctionArg {
+                        span,
+                        name: None,
+                        value: expr::Value::Tuple(expr::Tuple {
+                            span,
+                            values: vec![*self.left.clone()],
+                        }),
+                    }
+                };
+
+                let right = {
+                    let span = self.right.span();
+
+                    FunctionArg {
+                        span,
+                        name: None,
+                        value: expr::Value::Tuple(expr::Tuple {
+                            span,
+                            values: vec![*self.right.clone()],
+                        }),
+                    }
+                };
+
+                let fc = expr::FunctionCall {
+                    span,
+                    function_name,
+                    args: vec![left, right],
+                };
+
+                Expression::FunctionCall(fc)
             }
         }
     };

@@ -1,6 +1,8 @@
 -- vim: set syntax=haskell:
 -- best with haskell syntax highlighting
 
+-- full identfier to be renamed Identifier Path
+-- used NOT for dot access, but only for specifying import module
 fullidentifer
    -- TODO path
    - path?
@@ -16,6 +18,7 @@ identifer
    - ([a-z][A-Z])+([a-z][A-Z][0-9])*(_([a-z][A-Z][0-9])*)*
 
 fullexpression
+    - "let" ()(<ident> "=" <fullexpression>) ** ",") "in" fullexpression
     - fe0 ("and", fe0)*
     - fe2 ("or" fe2)*
     {-- ...
@@ -27,10 +30,11 @@ fullexpression
 
         ^   -- yeah. leave it in here. value::power has precedence
             -- this is just because identifiers in the wild may get recognized as `functioncall`
-        a:a
+        a /> a
     - fe1 (".", fe1)* -- see: discussion/dot-openrator.sol
         <expression>
     --}
+    - expression
 
 expression
     / functioncall

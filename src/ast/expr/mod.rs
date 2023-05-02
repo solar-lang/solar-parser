@@ -94,10 +94,12 @@ mod value_tests {
 pub enum Value<'a> {
     Literal(Literal<'a>),
     IString(IString<'a>),
+    // TODO add field access later?
     FullIdentifier(IdentifierPath<'a>),
     Closure(closure::Closure<'a>),
     Array(Array<'a>),
     Abs(Abs<'a>),
+    /// Tuples are, more often than not, just expressions wrapped in Parenthesis
     Tuple(Tuple<'a>),
     When(When<'a>),
     BlockExpression(BlockExpression<'a>),
