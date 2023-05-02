@@ -14,6 +14,8 @@ pub enum Literal<'a> {
     Bool { span: &'a str, value: bool },
     Int(Int<'a>),
     Float(&'a str),
+    // TODO there are many places, where a String
+    // gets created. What the fuck.
     StringLiteral(StringLiteral<'a>),
 }
 
