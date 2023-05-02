@@ -4,7 +4,7 @@ use nom::sequence::preceded;
 
 use nom::combinator::{cut, opt};
 
-use crate::util::from_to;
+use crate::util::{from_to, joined_by0};
 use crate::Parse;
 use crate::{ast::expr::FullExpression, parse::Res};
 
@@ -42,12 +42,16 @@ impl<'a> Parse<'a> for Function<'a> {
 
         let args = |input| {
             let (rest, ident) = Identifier::parse_ws(input)?;
-            let (rest, ty) = opt(preceded(keywords::TypeHint::parse_ws, Type::parse_ws))(rest)?;
+            let (rest, ty) = opt(preceded(
+                keywords::TypeHint::parse_ws,
+                // After the type hint there MUST come an identifier.
+                cut(Type::parse_ws),
+            ))(rest)?;
 
             Ok((rest, (ident, ty)))
         };
 
-        let (rest, args) = many0(args)(rest)?;
+        let (rest, args) = joined_by0(args, keywords::Comma::parse_ws)(rest)?;
 
         let (rest, _) = keywords::ParenClose::parse_ws(rest)?;
 
