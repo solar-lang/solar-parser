@@ -19,6 +19,17 @@ pub enum Literal<'a> {
     StringLiteral(StringLiteral<'a>),
 }
 
+impl<'a> Literal<'a> {
+    pub fn span(&'a self) -> &'a str {
+        match self {
+            Self::Bool { span, .. } => span,
+            Self::Int(i) => i.span,
+            Self::StringLiteral(i) => i.span,
+            Self::Float(i) => i,
+        }
+    }
+}
+
 #[cfg(test)]
 mod literal_tests {
     use super::*;

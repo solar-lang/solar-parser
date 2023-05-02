@@ -39,6 +39,24 @@ pub enum FullExpression<'a> {
     Expression(Box<Expression<'a>>),
 }
 
+impl<'a> FullExpression<'a> {
+    pub fn span(&'a self) -> &'a str {
+        match self {
+            Self::Let(n) => n.span,
+            Self::Or(s) => s.span,
+            Self::And(s) => s.span,
+            Self::Concat(s) => s.span,
+            Self::Add(s) => s.span,
+            Self::Subtract(s) => s.span,
+            Self::Multiply(s) => s.span,
+            Self::Divide(s) => s.span,
+            Self::Power(s) => s.span,
+            Self::Pipe(s) => s.span,
+            Self::Expression(s) => s.span(),
+        }
+    }
+}
+
 impl<'a> Parse<'a> for FullExpression<'a> {
     fn parse(input: &'a str) -> Res<'a, Self> {
         alt((

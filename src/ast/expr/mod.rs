@@ -31,6 +31,15 @@ pub enum Expression<'a> {
     Value(Value<'a>),
 }
 
+impl<'a> Expression<'a> {
+    pub fn span(&'a self) -> &'a str {
+        match self {
+            Expression::FunctionCall(f) => f.span,
+            Expression::Value(v) => v.span(),
+        }
+    }
+}
+
 impl<'a> Parse<'a> for Expression<'a> {
     fn parse(input: &'a str) -> Res<'a, Self> {
         alt((
@@ -100,6 +109,25 @@ pub enum Value<'a> {
     Not(Not<'a>),
 
     Power(Power<'a>),
+}
+
+impl<'a> Value<'a> {
+    pub fn span(&'a self) -> &'a str {
+        match self {
+            Self::Literal(l) => l.span(),
+            Self::IString(l) => l.span,
+            Self::FullIdentifier(l) => l.span,
+            Self::Closure(l) => l.span,
+            Self::Array(l) => l.span,
+            Self::Tuple(l) => l.span,
+            Self::Abs(l) => l.span,
+            Self::BlockExpression(l) => l.span,
+            Self::Sqrt(l) => l.span,
+            Self::Not(l) => l.span,
+            Self::Power(l) => l.span,
+            Self::When(l) => l.span,
+        }
+    }
 }
 
 impl<'a> Parse<'a> for Value<'a> {
