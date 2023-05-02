@@ -10,6 +10,19 @@ mod syntax_tests {
     use super::*;
 
     #[test]
+    fn hello_world_programm() {
+        let input = include_str!("../syntax-tests/abc.sol");
+
+        let result = Ast::parse_ws(input);
+
+        let (rest, _ast) = result.expect("To parse Ast");
+
+        let rest = rest.trim();
+
+        assert_eq!(rest, "", "expect parser to consume input");
+    }
+
+    #[test]
     fn all_files() {
         let testdir = "./syntax-tests";
 
