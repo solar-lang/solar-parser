@@ -20,6 +20,36 @@ pub struct Ast<'a> {
     pub items: Vec<BodyItem<'a>>,
 }
 
+impl<'a> Ast<'a> {
+    /// Parses the source code into a valid Ast
+    /// while making sure the entire source code is getting consumed.
+    pub fn from_source_code(
+        source_code: &'a str,
+    ) -> Result<Ast<'a>, nom::Err<nom::error::Error<&'a str>>> {
+        use crate::parse::Parse;
+        use nom::combinator::map;
+        let (rest, ast) = Ast::parse_ws(source_code)?;
+        let rest = rest.trim_start();
+        if !rest.is_empty() {
+            // this will yield an error
+            let Err(e) = nom::branch::alt((
+                // problem might have occured within the imports
+                map(Import::parse, |_| ()),
+                // or in any regular syntax element.
+                // The distinction is soley,
+                // because we want imports to appear in the beginning
+                map(BodyItem::parse, |_| ()),
+            ))(rest) else {
+                unreachable!("The parser should have returned with an error on remaining input '{}'", rest);
+            };
+
+            return Err(e);
+        }
+
+        Ok(ast)
+    }
+}
+
 impl<'a> crate::parse::Parse<'a> for Ast<'a> {
     fn parse(input: &'a str) -> crate::parse::Res<'a, Self> {
         use nom::multi::many0;
