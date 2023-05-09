@@ -20,12 +20,11 @@ pub struct Ast<'a> {
     pub items: Vec<BodyItem<'a>>,
 }
 
+pub type NomErr<'a> = nom::Err<nom::error::Error<&'a str>>;
 impl<'a> Ast<'a> {
     /// Parses the source code into a valid Ast
     /// while making sure the entire source code is getting consumed.
-    pub fn from_source_code(
-        source_code: &'a str,
-    ) -> Result<Ast<'a>, nom::Err<nom::error::Error<&'a str>>> {
+    pub fn from_source_code(source_code: &'a str) -> Result<Ast<'a>, NomErr<'a>> {
         use crate::parse::Parse;
         use nom::combinator::map;
         let (rest, ast) = Ast::parse_ws(source_code)?;
