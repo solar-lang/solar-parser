@@ -1,5 +1,7 @@
 use crate::{ast::keywords, parse::*, util::from_to};
 
+/// Denotes a symbol ina module or library.
+/// e.g. std.string.length "Hello World"
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct IdentifierPath<'a> {
     pub span: &'a str,
@@ -27,6 +29,12 @@ impl<'a> Parse<'a> for IdentifierPath<'a> {
 pub struct Identifier<'a> {
     pub span: &'a str,
     pub value: &'a str,
+}
+
+impl<'a> From<Identifier<'a>> for String {
+    fn from(value: Identifier<'a>) -> Self {
+        value.value.to_string()
+    }
 }
 
 impl<'a> PartialOrd<&str> for Identifier<'a> {
