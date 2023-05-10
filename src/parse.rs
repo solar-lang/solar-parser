@@ -1,5 +1,7 @@
 use nom::IResult;
 
+use crate::comment::parse_comment;
+
 pub type Res<'a, T> = IResult<&'a str, T>;
 
 pub trait Parse<'a>
@@ -9,22 +11,7 @@ where
     fn parse(input: &'a str) -> Res<'a, Self>;
 
     fn parse_ws(input: &'a str) -> Res<'a, Self> {
-        let input = input.trim_start();
-
-        // if rest starts with a comment, go to end of line
-        if let Some(rest) = input.strip_prefix('#') {
-            // index of the end of the line
-            let index = rest.find('\n');
-            if index.is_none() {
-                return Self::parse_ws("");
-            }
-            let index = index.unwrap() + 1;
-
-            // jump to the end of the line, and repeat the whitespace parsing
-            let input = &rest[index..];
-            return Self::parse_ws(input);
-        }
-
+        let (input, _comment) = parse_comment(input)?;
         Self::parse(input)
     }
 
