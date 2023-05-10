@@ -31,8 +31,8 @@ pub struct Identifier<'a> {
     pub value: &'a str,
 }
 
-impl<'a> From<Identifier<'a>> for String {
-    fn from(value: Identifier<'a>) -> Self {
+impl<'a> From<&Identifier<'a>> for String {
+    fn from(value: &Identifier<'a>) -> Self {
         value.value.to_string()
     }
 }
