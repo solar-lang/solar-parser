@@ -12,6 +12,8 @@ use import::Import;
 pub use structs::*;
 pub use ty::Type;
 
+use crate::comment::parse_comment;
+
 /// Tree representation of the syntax of a solar file
 #[derive(Clone, Debug)]
 pub struct Ast<'a> {
@@ -28,16 +30,21 @@ impl<'a> Ast<'a> {
         use crate::parse::Parse;
         use nom::combinator::map;
         let (rest, ast) = Ast::parse_ws(source_code)?;
-        let rest = rest.trim_start();
+
+        // Now, let's see, if there is any code in the input remaining.
+        // for that, we will parse all the remaining whitespace AND comments.
+        let (rest, _) = parse_comment(rest)?;
+        // apparently more syntax elements are occuring.
+        // return the appropriate error
         if !rest.is_empty() {
             // this will yield an error
             let Err(e) = nom::branch::alt((
                 // problem might have occured within the imports
-                map(Import::parse, |_| ()),
+                map(Import::parse, drop),
                 // or in any regular syntax element.
                 // The distinction is soley,
                 // because we want imports to appear in the beginning
-                map(BodyItem::parse, |_| ()),
+                map(BodyItem::parse, drop),
             ))(rest) else {
                 unreachable!("The parser should have returned with an error on remaining input '{}'", rest);
             };

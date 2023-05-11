@@ -4,7 +4,6 @@ use crate::util::from_to;
 
 /// Parses a comment from solar source code
 pub fn parse_comment(input: &str) -> crate::parse::Res<'_, &str> {
-    use nom::character::complete::char;
     let comment_start = input.trim_start();
 
     let mut cursor = comment_start;
