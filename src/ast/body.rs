@@ -12,32 +12,6 @@ use super::expr::FullExpression;
 use super::identifier::Identifier;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct BuildinTypeDecl<'a> {
-    pub span: &'a str,
-    pub name: Identifier<'a>,
-    pub generic_symbols: Option<GenericSymbols<'a>>,
-}
-
-impl<'a> Parse<'a> for BuildinTypeDecl<'a> {
-    fn parse(input: &'a str) -> Res<'a, Self> {
-        let (rest, _) = keywords::BuildinType::parse(input)?;
-        let (rest, name) = Identifier::parse_ws(rest)?;
-        let (rest, generic_symbols) = opt(GenericSymbols::parse_ws)(rest)?;
-
-        let span = unsafe { from_to(input, rest) };
-
-        Ok((
-            rest,
-            BuildinTypeDecl {
-                span,
-                name,
-                generic_symbols,
-            },
-        ))
-    }
-}
-
-#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum BodyItem<'a> {
     Function(function::Function<'a>),
     TypeDecl(TypeDecl<'a>),
@@ -129,5 +103,51 @@ impl<'a> Parse<'a> for Let<'a> {
                 expr,
             },
         ))
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct BuildinTypeDecl<'a> {
+    pub span: &'a str,
+    pub name: Identifier<'a>,
+    pub generic_symbols: Option<GenericSymbols<'a>>,
+}
+
+impl<'a> Parse<'a> for BuildinTypeDecl<'a> {
+    fn parse(input: &'a str) -> Res<'a, Self> {
+        let (rest, _) = keywords::BuildinType::parse(input)?;
+        let (rest, name) = Identifier::parse_ws(rest)?;
+        let (rest, generic_symbols) = opt(GenericSymbols::parse_ws)(rest)?;
+
+        let span = unsafe { from_to(input, rest) };
+
+        Ok((
+            rest,
+            BuildinTypeDecl {
+                span,
+                name,
+                generic_symbols,
+            },
+        ))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn buildin_types() {
+        let input = "
+            buildin_type Int
+            buildin_type Int16
+            buildin_type Int32
+            buildin_type Int8";
+
+        let (rest, _ty) = BuildinTypeDecl::parse_ws(input).unwrap();
+        assert!(
+            rest.trim_start().starts_with("buildin_type Int16"),
+            "expect rest to be present"
+        )
     }
 }
