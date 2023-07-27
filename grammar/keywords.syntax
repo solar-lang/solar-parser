@@ -18,3 +18,5 @@ keyword =
     / "function"
     / "use"
     / "type"
+    / "yield"
+    / "yields"

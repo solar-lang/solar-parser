@@ -46,7 +46,10 @@ impl<'a> Ast<'a> {
                 // because we want imports to appear in the beginning
                 map(BodyItem::parse, drop),
             ))(rest) else {
-                unreachable!("The parser should have returned with an error on remaining input '{}'", rest);
+                unreachable!(
+                    "The parser should have returned with an error on remaining input '{}'",
+                    rest
+                );
             };
 
             return Err(e);

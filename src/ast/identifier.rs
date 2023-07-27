@@ -93,7 +93,7 @@ pub fn is_keyword(word: &str) -> bool {
     [
         "and", "break", "do", "else", "false", "for", "generic", "if", "in", "is", "let", "loop",
         "mut", "next", "or", "pub", "return", "test", "then", "true", "type", "use", "when",
-        "async", "await", "fun", "where",
+        "async", "await", "fun", "where", "yield", "yields",
     ]
     .contains(&word)
 }
