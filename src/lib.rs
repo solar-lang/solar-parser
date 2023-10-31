@@ -14,13 +14,9 @@ mod syntax_tests {
     fn hello_world_programm() {
         let input = include_str!("../syntax-tests/abc.sol");
 
-        let result = Ast::parse_ws(input);
+        let result = Ast::from_source_code(input);
 
-        let (rest, _ast) = result.expect("To parse Ast");
-
-        let rest = rest.trim();
-
-        assert_eq!(rest, "", "expect parser to consume input");
+        let ast = result.expect("To parse Ast");
     }
 
     #[test]
@@ -41,13 +37,9 @@ mod syntax_tests {
             let content = std::fs::read_to_string(e.path())
                 .unwrap_or_else(|_| panic!("read content of file: {}", filename));
 
-            let result = Ast::parse_ws(&content);
+            let result = Ast::from_source_code(&content);
 
-            let (rest, _ast) = result.expect("To parse Ast");
-
-            let rest = rest.trim();
-
-            assert_eq!(rest, "", "expect parser to consume input");
+            let _ast = result.expect("To parse Ast");
         }
     }
 }
