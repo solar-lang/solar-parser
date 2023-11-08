@@ -5,6 +5,7 @@ pub(crate) mod util;
 mod parse;
 pub use ast::Ast;
 pub use parse::Parse;
+pub use util::from_to;
 
 #[cfg(test)]
 mod syntax_tests {
