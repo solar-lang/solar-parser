@@ -26,11 +26,7 @@ fullexpression
         +
         a - a
         *
-        /
-
-        ^   -- yeah. leave it in here. value::power has precedence
-            -- this is just because identifiers in the wild may get recognized as `functioncall`
-        a /> a
+        a / a -- this is pipeing
     - fe1 (".", fe1)* -- see: discussion/dot-openrator.sol
         <expression>
     --}
@@ -101,4 +97,3 @@ functioncall
 functioncallarg
     - (identifier "=")?
     - value
-

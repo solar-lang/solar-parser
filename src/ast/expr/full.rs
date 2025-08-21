@@ -21,18 +21,17 @@ pub enum FullExpression<'a> {
     Subtract(Subtract<'a>),
 
     Multiply(Multiply<'a>),
-    Divide(Divide<'a>),
 
     // Rarely used, because mostly Value::Power takes precedence.
     Power(Power<'a>),
 
-    // list /> filter ft : map n * 3 ++ [end_elem]
+    // list / filter ft : map n * 3 ++ [end_elem]
     // <=>
-    // ( list /> filter ft : map n ) * 3 ++ [end_elem]
+    // ( list / filter ft : map n ) * 3 ++ [end_elem]
     //
-    // list /> filter ft : map n^3 ++ [end_elem]
+    // list / filter ft : map n^3 ++ [end_elem]
     // <=>
-    // list /> filter ft : map ( n^3 ) ++ [end_elem]
+    // list / filter ft : map ( n^3 ) ++ [end_elem]
     Pipe(Pipe<'a>),
 
     // // direct field access
@@ -50,7 +49,6 @@ impl<'a> FullExpression<'a> {
             Self::Add(s) => s.span,
             Self::Subtract(s) => s.span,
             Self::Multiply(s) => s.span,
-            Self::Divide(s) => s.span,
             Self::Power(s) => s.span,
             Self::Pipe(s) => s.span,
             Self::Expression(s) => s.span(),
@@ -162,8 +160,7 @@ create_ast_expr!(And, keywords::And, Concat);
 create_ast_expr!(Concat, keywords::Concat, Add);
 create_ast_expr!(Add, keywords::Add, Subtract);
 create_ast_expr!(Subtract, keywords::Subtract, Multiply);
-create_ast_expr!(Multiply, keywords::Multiply, Divide);
-create_ast_expr!(Divide, keywords::Divide, Power);
+create_ast_expr!(Multiply, keywords::Multiply, Power);
 create_ast_expr!(Power, keywords::Power, Pipe);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -174,7 +171,7 @@ pub struct Pipe<'a> {
 }
 
 impl<'a> ParseExpression<'a> for Pipe<'a> {
-    fn parse(input: &'a str) -> Res<'a, FullExpression> {
+    fn parse(input: &str) -> Res<'_, FullExpression<'_>> {
         use nom::{multi::many1, sequence::preceded};
 
         let (rest, expr) = Expression::parse(input)?;
@@ -294,12 +291,12 @@ mod tests {
             "x+y+z+9",
             "x+y+z+9 + 10",
             "(x+y)*7",
-            "(x+y) /> double",
+            "(x+y) / double",
             "n^8",
             "√2",
             "!true or a",
-            "n/8+9/>something",
-            "list /> filter ft /> map n * 3 ++ [end_elem]",
+            "n /div 8 + 9/something",
+            "list / filter ft / map n * 3 ++ [end_elem]",
             "cos x*2",
             "(cos x)*2",
         ];
@@ -312,7 +309,7 @@ mod tests {
 
     #[test]
     fn pipe_test() {
-        let input = "[1, 2, 3] /> map f /> add √4";
+        let input = "[1, 2, 3] / map f / add √4";
         let (rest, _expr) = FullExpression::parse(input).unwrap();
         assert_eq!(rest, "");
     }
