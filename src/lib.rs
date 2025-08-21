@@ -12,15 +12,6 @@ mod syntax_tests {
     use super::*;
 
     #[test]
-    fn hello_world_programm() {
-        let input = include_str!("../syntax-tests/abc.sol");
-
-        let result = Ast::from_source_code(input);
-
-        let ast = result.expect("To parse Ast");
-    }
-
-    #[test]
     fn all_files() {
         let testdir = "./syntax-tests";
 
