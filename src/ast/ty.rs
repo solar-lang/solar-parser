@@ -5,6 +5,7 @@ use nom::{
 };
 
 use crate::{
+    parse::Res,
     util::{from_to, joined_by0},
     Parse,
 };
@@ -27,12 +28,12 @@ pub enum Type<'a> {
 }
 
 impl<'a> Parse<'a> for Type<'a> {
-    fn parse(input: &'a str) -> crate::parse::Res<'a, Self> {
+    fn parse(input: &'a str) -> Res<'a, Self> {
         alt((parse_function, parse_normal))(input)
     }
 }
 
-fn parse_function(input: &str) -> crate::parse::Res<'_, Type> {
+fn parse_function(input: &str) -> Res<Type> {
     let (rest, _) = Function::parse(input)?;
     let (rest, _) = ParenOpen::parse_ws(rest)?;
 
@@ -48,7 +49,7 @@ fn parse_function(input: &str) -> crate::parse::Res<'_, Type> {
     Ok((rest, Type::Function { span, args, ret }))
 }
 
-fn parse_normal(input: &str) -> crate::parse::Res<'_, Type> {
+fn parse_normal(input: &str) -> Res<Type> {
     let generic_1 = map(Type::parse_ws, |t| vec![t]);
     let generic_many = |input| {
         let (rest, _) = ParenOpen::parse_ws(input)?;
