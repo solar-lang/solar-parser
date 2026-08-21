@@ -10,6 +10,7 @@ where
 {
     fn parse(input: &'a str) -> Res<'a, Self>;
 
+    /// Parse Item with respect to preceding whitespace and optional comments.
     fn parse_ws(input: &'a str) -> Res<'a, Self> {
         let (input, _comment) = parse_comment(input)?;
         Self::parse(input)
